@@ -1,7 +1,9 @@
 <!DOCTYPE html>
 <title>Batch processor</title>
 <meta charset="utf-8" />
+<meta name=viewport content="width=device-width, user-scalable=no">
 <script src=/static/xhr.js></script>
+<link href=/static/favicon.ico rel=icon type=image/x-icon>
 <link rel=stylesheet href=/static/style.css>
 <script>
   function _sendText() {
@@ -36,17 +38,16 @@
 </script>
 <pre class=editable id=batchentry contenteditable="true">
 LOOP:
-LD1:255
-LM:200
-ST
-LM:202
-LD1:100
-INVALID LINE
-ST
-LM:200 
-SLEEP 5
-LM:202
-ST
-GOTO LOOP
+LD1:255 # Full brightness
+LM:200  # Left lamp on
+ST      # Pause (wait for remote)
+LM:202  # Left lamp off
+LD1:100 # Brightness 100
+ST      # Pause
+LM:200  # Left lamp on
+SLEEP 5 # Wait 5 seconds
+LM:202  # Left lamp off
+ST      # Pause
+# GOTO LOOP 
 </pre>
-<input type=button onclick=sendText() value="Run Batch!"/>
+<input type=button id=runbatch onclick=sendText() value="Run Batch!"/>

@@ -67,7 +67,9 @@ XHR = function()
 					catch(e) {
 						json = null;
 					}
-				}
+				} else {
+						json = xhr.responseText;
+        }
 
 				callback(xhr, json);
 			}

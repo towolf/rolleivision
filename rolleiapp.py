@@ -3,7 +3,7 @@
 import web, json, rolleicom
 
 FUNCS = rolleicom.RolleiCom.__dict__.keys()
-r = rolleicom.RolleiCom('/dev/ttyAMA0')
+r = rolleicom.RolleiCom('/dev/ttyUSB0')
 
 urls = (
     '/rolleicom', 'rolleicom'
