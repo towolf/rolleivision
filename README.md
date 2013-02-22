@@ -1,7 +1,11 @@
 rolleivision
 ============
 
-Small project to control Rollei MSC Slide projectors (includes web interface)
+Small project to control Rollei MSC Slide projectors via RS323 serial port (includes web interface).
+
+As the controlling box the Raspberry Pi running an ad-hoc wireless network is the most suitable solution.
+
+
 
 ![web.py web interface](http://i.imgur.com/d8bnnMd.png)
 
