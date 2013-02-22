@@ -1,0 +1,339 @@
+<!doctype html>
+<title>RolleiVision MSC Remote</title>
+<meta charset=utf-8>
+<meta name=viewport content="width=device-width, user-scalable=no">
+<style>
+  body {
+    font-family: monospace;
+    background: white;
+    color: #565656;
+  }
+  .dark {
+    background: black;
+    -webkit-filter: invert(1) hue-rotate(160deg) saturate(1.2) brightness(1.1);
+  }
+  #error, #res {
+    font-size: 70%;
+  }
+  #error {
+    color: red; 
+    background:  #fbe3e4;
+    font-weight: bold;
+  }
+  .big {
+    font-size: 400%;
+  }
+  .right {
+    text-align: right;
+  }
+  .left {
+    text-align: left;
+  }
+  .centered {
+    text-align: center;
+  }
+  table { 
+    margin-left: auto;
+    margin-right: auto;
+  }
+  td {
+    text-align: center;
+    /* baseline, sub, super, top, text-top, middle,
+     * bottom, text-bottom, length, or a value in percentage
+     */
+    vertical-align: middle;
+    padding: 0 10px 0 10px;
+  }
+  input[type='range'] {
+    width: 90%;
+  }
+  output, label {
+    vertical-align: middle;
+    width: 25%;
+  }
+  #xhr_poll_status, #projector_status {
+    font-size: 75%;:
+    cursor: pointer;
+  }
+  #xhr_poll_status #xhr_poll_status_off, #projector_status_offline {
+    font-weight: bold;
+    color: #FF0000;
+  }
+  #xhr_poll_status #xhr_poll_status_on, #projector_status_online {
+    font-weight: bold;
+    color: #00FF00;
+  }
+  button {
+    height: 80px;
+    width: 100%;
+    font-family: monospace;
+  }
+  hr {
+    border: 1px solid #dedede;
+    border-bottom: none;
+    margin: 10px 0 10px 0;
+  }
+  button {
+    display: block;
+    padding: 0;
+    background: #f5f5f5;
+    border: 1px solid #dedede;
+    border-top: 1px solid #eee;
+    border-left: 1px solid #eee;
+    color: #565656;
+  }
+  button img {
+    margin:0 3px -3px 0 !important;
+    padding:0;
+    border:none;
+    width:16px;
+    height:16px;
+  }
+  button:hover {
+    color: #336699;
+    background: #dff4ff;
+    border: 1px solid #c2e1ef;
+ }
+ button.positive:hover {
+   color: #529214;
+   background: #E6EFC2;
+   border: 1px solid #C6D880;
+ }
+ button.negative, button.negative:hover {
+   color: #d12f19;
+   background: #fbe3e4;
+   border: 1px solid #fbc2c4;
+ }
+ button.big.negative, button.big.negative:hover {
+   color: #bb7c16;
+   background: #f9e6c8;
+   border: 1px solid #e5991f;
+ }
+</style>
+
+<script src=/static/xhr.js></script>
+<script>
+  var submit = function(args, origin) {
+    XHR.get('/rolleicom', args, function(x, r) {
+      var success = r.response[0], value = r.response[1], status = r.response[2];
+      res = document.getElementById('res');
+      err = document.getElementById('error');
+      if (success) {
+        res.innerHTML = 'status: ' + status;
+        err.innerHTML = '';
+      } else {
+        err.innerHTML = 'error: ' + status;
+        res.innerHTML = '';
+      }
+      if (typeof(value) == 'boolean') {
+        value ? origin.className += " negative" : origin.className = origin.className.replace(/(?:^|\s)negative(?!\S)/g , '')
+      }
+    });
+  }
+  var throttle = function(func, wait) {
+    var timeout;
+    return function() {
+      var context = this, args = arguments;
+      if (!timeout) {
+        // the first time the event fires, we setup a timer, which 
+        // is used as a guard to block subsequent calls; once the 
+        // timer's handler fires, we reset it and create a new one
+        timeout = setTimeout(function() {
+          timeout = null;
+          func.apply(context, args);
+        }, wait);
+      }
+    }
+  }
+  function handleKeyPress(e, form) {
+    // inout onkeypress="handleKeyPress(event,this.form)"
+    var key=e.keyCode || e.which;
+    if (key == 13) {
+      form.submit();
+    }
+  }
+  function toggleDark() {
+    if (document.body.className.match('dark'))
+      document.body.className = document.body.className.replace(/(?:^|\s)dark(?!\S)/g , '');
+    else
+      document.body.className += " dark";
+  }
+  var setLeftBrightness = function(value) {
+    submit({'action': 'brightnessleft', 'brightness': value}, this)
+    bleftvalue.value = ('\xA0\xA0\xA0\xA0\xA0' + (value / 255 * 100).toFixed(1)).slice(-5);
+  }
+  var setRightBrightness = function(value) {
+    submit({'action': 'brightnessright', 'brightness': value}, this)
+    brightvalue.value = ('\xA0\xA0\xA0\xA0\xA0' + (value / 255 * 100).toFixed(1)).slice(-5);
+  }
+  var setMaxBrightness = function(value) {
+    submit({'action': 'maxbrightness', 'brightness': value}, this)
+    maxvalue.value = value
+  }
+  var setDissolveTime = function(value) {
+    submit({'action': 'dissolvefor', 'duration': value}, this)
+    dissolvevalue.value = ('\xA0\xA0\xA0' + (value / 10).toFixed(1)).slice(-5) + ' Sek.';
+  }
+  var checkConnection = function() {
+    XHR.poll(5, '/rolleicom', {'action': 'connected'}, function(x, r) {
+      response = r.response;
+      if (response) {
+        document.getElementById('projector_status_online').style.display = '';
+        document.getElementById('projector_status_offline').style.display = 'none';
+      } else {
+        document.getElementById('projector_status_online').style.display = 'none';
+        document.getElementById('projector_status_offline').style.display = '';
+      } 
+    });
+  }
+  var pollStatus = function() {
+    XHR.poll(1, '/rolleicom', {'action': 'getstatus', 'verbose': true}, function(x, r) {
+      document.getElementById('res').innerHTML = r.response;
+    });
+  }
+
+  window.onload = function() {
+    l = document.getElementById('bleftinput');
+    r = document.getElementById('brightinput');
+    m = document.getElementById('maxinput');
+    d = document.getElementById('dissolveinput');
+    l.addEventListener('change', throttle(function() {setLeftBrightness(l.value);}, 50), false);
+    r.addEventListener('change', throttle(function() {setRightBrightness(r.value);}, 150), false);
+    m.addEventListener('change', throttle(function() {setMaxBrightness(m.value);}, 250), false);
+    d.addEventListener('change', throttle(function() {setDissolveTime(d.value);}, 250), false);
+
+    checkConnection()
+  }
+</script>
+<table>
+  <tr>
+    <td>
+      <span id="projector_status" onclick="">
+        Projector
+        <span id=projector_status_online style=display:none>online</span>
+        <span id=projector_status_offline>offline</span>
+      </span>
+    </td>
+    <td>
+      <span id=xhr_poll_status style=display:none onclick="XHR.running() ? XHR.halt() : XHR.run()">
+        Auto Refresh:
+        <span id=xhr_poll_status_on>on</span>
+        <span id=xhr_poll_status_off style="display:none">off</span>
+      </span>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <button onclick="submit({'action': 'togglestop'}, this)">STOP / GO</button>
+    </td>
+    <td>
+      <button onclick="submit({'action': 'next'}, this)" class="big positive">▲</button>
+    </td>
+    <td>
+      <button onclick="submit({'action': 'focusin'}, this)">FOCUS IN</button>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <button class=negative onclick="submit({'action': 'toggleAF'}, this)">AUTOFOCUS</button>
+    </td>
+    <td>
+      <button onclick="submit({'action': 'previous'}, this)" class="big positive">▼</button>
+    </td>
+    <td>
+      <button onclick="submit({'action': 'focusout'}, this)">FOCUS OUT</button>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="3">
+      <hr>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <label for=lleftinput>LEFT</label>
+    </td>
+    <td>
+    </td>
+    <td>
+      <span>RIGHT</span>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <button onclick="submit({'action': 'toggleleftlamp'}, this)" class=big>☀</button>
+    </td>
+    <td>
+      <button onclick="submit({'action': 'lampcontrol', 'left': 0, 'right': 0}, this)" class=big>☼☼</button>
+    </td>
+    <td>
+      <button onclick="submit({'action': 'togglerightlamp'}, this)" class=big>☀</button>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <input id=bleftinput type=range min=0 max=255 value=255 step=1 onclick="focus()" />
+    </td>
+    <td>
+      <output id=bleftvalue>100.0</output>
+      <output id=brightvalue>100.0</output>
+    </td>
+    <td>
+      <input id=brightinput type=range min=0 max=255 value=255 step=1 onclick="focus()" />
+    </td>
+  </tr>
+  <tr>
+    <td colspan=3>
+      <hr>
+    </td>
+  </tr>
+  <tr>
+    <td class=right>
+      <label for=dissolveinput>DISSOLVE</label>
+    </td>
+    <td class=centered>
+      <input id=dissolveinput type=range min=0 max=255 value=25 step=1 onclick="focus()" />
+    </td>
+    <td class=left>
+      <output id=dissolvevalue>&nbsp;&nbsp;2.5 Sek.</output>
+    </td>
+  </tr>
+  <tr>
+    <td colspan=3>
+      <hr>
+    </td>
+  </tr>
+  <tr>
+    <td class=right>
+      <label for=maxinput>MAX BRIGHTNESS</label>
+    </td>
+    <td class=centered>
+      <input id=maxinput type=range min=0 max=255 value=255 step=1 onclick="focus()" />
+    </td>
+    <td class=left>
+      <output id=maxvalue>255</output>
+    </td>
+  </tr>
+  <tr>
+    <td colspan=3>
+      <hr>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <button onclick="submit({'action': 'enterPCmode'}, this)">PC MODE</button>
+    </td>
+    <td>
+      <button onclick="submit({'action': 'end'}, this)">END</button>
+    </td>
+    <td>
+      <button onclick="toggleDark()">DARK</button>
+    </td>
+  </tr>
+  <tr>
+    <td colspan=3>
+      <span id=res></span>
+      <span id=error></span>
+    </td>
+  </tr>
+</table>
