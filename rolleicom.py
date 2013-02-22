@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 
 from serial import Serial
 
@@ -25,8 +25,7 @@ class RolleiCom():
                       '?': '<not implemented>'}
 
     def getstatus(self, verbose = False):
-        # supposedly, the char to send for status report is SMALL SHARP S
-        # but it's really SMALL A ACUTE
+        # the char sent for status report is SMALL SHARP S in DOS codepage cp437
         self.serial.write(chr(225))
         if not verbose:
             return self.serial.read()
