@@ -9,9 +9,6 @@ class RolleiCom():
         if timeout < 0.01: timeout = 0.1
         kwargs['timeout'] = timeout
         self.serial = Serial(*args, **kwargs)
-        self.PCMODE = None
-        self.AF = True
-        self.PAUSED = False
         self.EMITSLEFT = False
         self.EMITSRIGHT = False
         self.CODES = {'v': 'command accepted',
@@ -75,10 +72,6 @@ class RolleiCom():
         return (True, out, self.getstatus(verbose = True))
 
     def readmem(self, start, length, block = 'XData', quiet = True):
-        # brightness: (6223, 2) oder evtl 38955
-        # letzte lampcontrol (6187, 2) d.h. 200 201 202 204 204 205 206 und letzt gesetzte dissolve time auf byte 2
-        # irgendeine lampe an (49385, 1) oder 16617   0x04 fuer an, 0x44 fuer alle aus
-        # pc mode u.u. (16624, 2) 4e 67 fuer an 7e fe fuer aus oder u.u. 49392
 
         if not quiet:
             import sys
@@ -102,11 +95,16 @@ class RolleiCom():
         escapebyte = '\x10'
         offsetbyte = '\x80'
 
+        def sendstop():
+            self.serial.write(stopcmd)
+            self.serial.read()
+
         outbuf = bytearray(length)
 
         self.serial.write(readcmd)
         out = self.serial.read()
         if not out == readcmd:
+            sendstop()
             if self.connected():
                 raise Exception('port did not echo read command 0x02. (read %s)' % out.encode('hex'))
             else:
@@ -116,11 +114,13 @@ class RolleiCom():
         self.serial.write(starthex)
         out = self.serial.read(2)
         if not out == starthex:
+            sendstop()
             raise Exception('port did not echo start address "%s". (read %s)' % (starthex.encode('hex'), out.encode('hex')))
 
         self.serial.write(lengthhex)
         out = self.serial.read(2)
         if not out == lengthhex:
+            sendstop()
             raise Exception('port did not echo length "%s". (read %s)' % (lengthhex.encode('hex'), out.encode('hex')))
 
         for byte in xrange(length):
@@ -142,29 +142,34 @@ class RolleiCom():
                 sys.stdout.write('%s ' % cleaned.encode('hex'))
 
             if ord(out) < 0x10:
+                sendstop()
                 raise Exception('read byte in escaped range, got to iteration %d. exiting (read %s)' % (byte, out.encode('hex')))
 
             self.serial.write(out)
 
-        # if length == 1:
-        #     # TODO: find out why it needs to be canceled for 1 byte read
-        #     self.serial.write(stopcmd)
-        #     out = self.serial.read(2)
-        self.serial.write(stopcmd)
-        out = self.serial.read()
+        if length == 1:
+            # TODO: find out why it needs to be canceled for 1 byte read
+            sendstop()
 
         return outbuf
 
-    def enterPCmode(self, wait = False):
+    def enablePC(self, wait = False):
         # enables PC mode, disables IR remote
-        self.PCMODE = True
         return self.submit('PE', wait) # PC Modus einschalten
 
-    def exitPCmode(self, wait = False):
+    def disablePC(self, wait = False):
         # exit PC mode, manual control via IR remote enabled
         # will only accept PE command subsequently
-        self.PCMODE = False
         return self.submit('PA', wait) # PC Modus abschalten
+
+    def togglePC(self, wait = False):
+        # toggle PC mode;
+        PCMODE = self.queryPCmode()
+        if PCMODE[1]:
+            status = self.disablePC()
+        else:
+            status = self.enablePC()
+        return self.queryPCmode()
 
     def reset(self, wait = False):
         # executes end function on projector and exits PC mode
@@ -189,39 +194,37 @@ class RolleiCom():
 
     def enableAF(self, wait = False):
         # enable autofocus
-        self.AF = True
         return self.submit('AE', wait) # Autofokus einschalten
 
     def disableAF(self, wait = False):
         # disable autofocus
-        self.AF = False
         return self.submit('AA', wait) # Autofokus abschalten
 
     def toggleAF(self, wait = False):
         # toggle autofocus; as autofocus button on IR remote
-        if self.AF:
+        AF = self.queryAF()
+        if AF[1]:
             status = self.disableAF()
         else:
             status = self.enableAF()
-        return (status[0], self.AF, status[2])
+        return self.queryAF()
 
     def stop(self, wait = False):
         # pause projector
-        self.PAUSED = True
         return self.submit('ST', wait) # Stop
 
     def go(self, wait = False):
         # resume projector
-        self.PAUSED = False
         return self.submit('WE', wait) # Weiter
 
     def togglestop(self, wait = False):
         # stop and go toggle; as STOP/GO button on IR remote
-        if self.PAUSED:
+        stopped = self.querystopped()
+        if stopped[1]:
             status = self.go()
         else:
             status = self.stop()
-        return (status[0], self.PAUSED, status[2])
+        return self.querystopped()
 
     def end(self, wait = False):
         # end projection and rewind magazine; as END button on IR remote
@@ -361,17 +364,54 @@ class RolleiCom():
             raise ValueError('Slide number is a value between 0 and 255')
 
         self.reset()
-        self.enterPCmode()
+        self.enablePC()
         self.focusin()
 
         while self.currentslide(wait = True) < position:
             self.focusin(wait = True)
         return self.currentslide()
 
+    # Information derived from direct binary memory access
+    #
+    #  Discovered memory addresses for MSC 300P firmware V4.2
+    #  6223 - brightness: two bytes 0..255
+    #  6187 - last LM: command, i.e., as int [200..207]
+    #  6188 - last set dissolve time
+    # 16617 - bit 7 bin(64) 0 if any lamp on; 1 if both lamps off
+    # 16617 - bit 1 bin(1) 0 if any AF is on; 1 if AF is off
+    # 16618 - current slide as byte [0..255]
+    # 16621 - stop/go bit 7 bin(64) 0 if go and 1 if stopped
+    # 16624 - PC mode bits bin(32)+bin(16) 0 if PC mode on and 1 otherwise
+
     def firmwarerevision(self):
+        # Returns string of firmware version
         memorypointer = 0xa0 + 42  # pointer table address plus offset 42
         address = int(str(self.readmem(memorypointer, 2, block = "Code")).encode('hex'), 16)
         length = int(str(self.readmem(memorypointer + 2, 2, block = "Code")).encode('hex'), 16)
         revision = str(self.readmem(address, length, block = "Code")).rstrip('\x00')
         return revision
 
+    def queryPCmode(self):
+        # Return True when PC mode is engaged
+        return (True, not ord(self.readmem(16624, 1)) & 48, '')
+
+    def querystopped(self):
+        # Return True if stop/go function has paused the projector
+        return (True, bool(ord(self.readmem(16621, 1)) & 64), '')
+
+    def queryAF(self):
+        # Return True if autofocus is enabled
+        return (True, not ord(self.readmem(16617, 1)) & 1, '')
+
+    def querylamps(self):
+        # Returns True is any lamp is powered; False if all lamps are off
+        return (True, not ord(self.readmem(16617, 1)) & 64, '')
+
+    def querybrightness(self):
+        # Returns tuple with current brightness (0..255, 0..255)
+        brightness = self.readmem(6223, 2)
+        return (True, (brightness[0], brightness[1]), '')
+
+    def querydissolve(self):
+        # Returns currently set dissolve time for next slide change
+        return (True, ord(self.readmem(6188, 1)), '')

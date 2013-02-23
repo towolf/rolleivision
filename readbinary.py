@@ -1,3 +1,5 @@
+import sys
+
 def compare(lst):
       return lst[1:] == lst[:-1]
 

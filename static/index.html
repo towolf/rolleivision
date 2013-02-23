@@ -99,12 +99,12 @@
    background: #E6EFC2;
    border: 1px solid #C6D880;
  }
- button.negative, button.negative:hover {
+ button.on, button.on:hover {
    color: #d12f19;
    background: #fbe3e4;
    border: 1px solid #fbc2c4;
  }
- button.big.negative, button.big.negative:hover {
+ button.big.on, button.big.on:hover {
    color: #bb7c16;
    background: #f9e6c8;
    border: 1px solid #e5991f;
@@ -126,7 +126,11 @@
         res.innerHTML = '';
       }
       if (typeof(value) == 'boolean') {
-        value ? origin.className += " negative" : origin.className = origin.className.replace(/(?:^|\s)negative(?!\S)/g , '')
+        if (value == true) {
+          origin.className += " on";
+        } else {
+          origin.className = origin.className.replace(/(?:^|\s)on(?!\S)/g , '');
+        }
       }
     });
   }
@@ -146,11 +150,14 @@
     }
   }
   function handleKeyPress(e, form) {
-    // inout onkeypress="handleKeyPress(event,this.form)"
+      // inout onkeypress="handleKeyPress(event,this.form)"
     var key=e.keyCode || e.which;
     if (key == 13) {
       form.submit();
     }
+  }
+  function q(expr) {
+    return document.querySelector(expr);
   }
   function toggleDark() {
     if (document.body.className.match('dark'))
@@ -160,19 +167,15 @@
   }
   var setLeftBrightness = function(value) {
     submit({'action': 'brightnessleft', 'brightness': value}, this)
-    bleftvalue.value = ('\xA0\xA0\xA0\xA0\xA0' + (value / 255 * 100).toFixed(1)).slice(-5);
+    q('#bleftvalue').value = ('\xA0\xA0\xA0\xA0\xA0' + (value / 255 * 100).toFixed(1)).slice(-5);
   }
   var setRightBrightness = function(value) {
     submit({'action': 'brightnessright', 'brightness': value}, this)
-    brightvalue.value = ('\xA0\xA0\xA0\xA0\xA0' + (value / 255 * 100).toFixed(1)).slice(-5);
-  }
-  var setMaxBrightness = function(value) {
-    submit({'action': 'maxbrightness', 'brightness': value}, this)
-    maxvalue.value = value
+    q('#brightvalue').value = ('\xA0\xA0\xA0\xA0\xA0' + (value / 255 * 100).toFixed(1)).slice(-5);
   }
   var setDissolveTime = function(value) {
     submit({'action': 'dissolvefor', 'duration': value}, this)
-    dissolvevalue.value = ('\xA0\xA0\xA0' + (value / 10).toFixed(1)).slice(-5) + ' Sek.';
+    q('#dissolvevalue').value = ('\xA0\xA0\xA0' + (value / 10).toFixed(1)).slice(-5) + ' Sek.';
   }
   var checkConnection = function() {
     XHR.poll(5, '/rolleicom', {'action': 'connected'}, function(x, r) {
@@ -193,16 +196,80 @@
   }
 
   window.onload = function() {
-    l = document.getElementById('bleftinput');
-    r = document.getElementById('brightinput');
-    m = document.getElementById('maxinput');
-    d = document.getElementById('dissolveinput');
-    l.addEventListener('change', throttle(function() {setLeftBrightness(l.value);}, 50), false);
-    r.addEventListener('change', throttle(function() {setRightBrightness(r.value);}, 150), false);
-    m.addEventListener('change', throttle(function() {setMaxBrightness(m.value);}, 250), false);
-    d.addEventListener('change', throttle(function() {setDissolveTime(d.value);}, 250), false);
+    bleft = document.getElementById('bleftinput');
+    bright = document.getElementById('brightinput');
+    dissolve = document.getElementById('dissolveinput');
+    pcmode = document.getElementById('pcmode');
+    stopgo = document.getElementById('stopgo');
+    autofocus = document.getElementById('autofocus');
 
-    checkConnection()
+    bleft.addEventListener('change', throttle(function() {
+      setLeftBrightness(bleft.value)
+    }, 50), false);
+    bright.addEventListener('change', throttle(function() {
+      setRightBrightness(bright.value)
+    }, 150), false);
+    dissolve.addEventListener('change', throttle(function() {
+      setDissolveTime(dissolve.value)
+    }, 250), false);
+
+    var initPCmode = function() {
+      XHR.get('/rolleicom', {'action': 'queryPCmode'}, function(x, r) {
+        var value = r.response[1];
+        if (value === true) {
+          pcmode.className = "on";
+        } else {
+          pcmode.className = "";
+        }
+        checkConnection();
+      })
+    };
+    var initStopped = function() {
+      XHR.get('/rolleicom', {'action': 'querystopped'}, function(x, r) {
+        var value = r.response[1];
+        if (value === true) {
+          stopgo.className = "on";
+        } else {
+          stopgo.className = "";
+        }
+        initPCmode();
+      })
+    };
+    var initAF = function() {
+      XHR.get('/rolleicom', {'action': 'queryAF'}, function(x, r) {
+        var value = r.response[1];
+        if (value === true) {
+          autofocus.className = "on";
+        } else {
+          autofocus.className = "";
+        }
+        initStopped();
+      })
+    };
+    var initDissolve = function() {
+      XHR.get('/rolleicom', {'action': 'querydissolve'}, function(x, r) {
+        var success = r.response[0], value = r.response[1], status = r.response[2];
+        if (success) {
+          dissolve.value = value;
+          q('#dissolvevalue').value = ('\xA0\xA0\xA0' + (value / 10).toFixed(1)).slice(-5) + ' Sek.';
+        }
+        initAF();
+      })
+    };
+    var initBrightness = function() {
+      XHR.get('/rolleicom', {'action': 'querybrightness'}, function(x, r) {
+        var success = r.response[0], value = r.response[1], status = r.response[2];
+        if (success) {
+          bleft.value = value[0];
+          bright.value = value[1];
+          q('#bleftvalue').value = ('\xA0\xA0\xA0\xA0\xA0' + (bleft.value / 255 * 100).toFixed(1)).slice(-5);
+          q('#brightvalue').value = ('\xA0\xA0\xA0\xA0\xA0' + (bright.value / 255 * 100).toFixed(1)).slice(-5);
+        }
+        initDissolve();
+      })
+    };
+
+    initBrightness();
   }
 </script>
 <table>
@@ -224,24 +291,24 @@
   </tr>
   <tr>
     <td>
-      <button onclick="submit({'action': 'togglestop'}, this)">STOP / GO</button>
+      <button id=stopgo onclick="submit({'action': 'togglestop'}, this)">STOP / GO</button>
     </td>
     <td>
-      <button onclick="submit({'action': 'next'}, this)" class="big positive">▲</button>
+      <button id=forward onclick="submit({'action': 'next'}, this)" class="big positive">▲</button>
     </td>
     <td>
-      <button onclick="submit({'action': 'focusin'}, this)">FOCUS IN</button>
+      <button id=focusin onclick="submit({'action': 'focusin'}, this)">FOCUS IN</button>
     </td>
   </tr>
   <tr>
     <td>
-      <button class=negative onclick="submit({'action': 'toggleAF'}, this)">AUTOFOCUS</button>
+      <button id=autofocus onclick="submit({'action': 'toggleAF'}, this)">AUTOFOCUS</button>
     </td>
     <td>
-      <button onclick="submit({'action': 'previous'}, this)" class="big positive">▼</button>
+      <button id=back onclick="submit({'action': 'previous'}, this)" class="big positive">▼</button>
     </td>
     <td>
-      <button onclick="submit({'action': 'focusout'}, this)">FOCUS OUT</button>
+      <button id=focusout onclick="submit({'action': 'focusout'}, this)">FOCUS OUT</button>
     </td>
   </tr>
   <tr>
@@ -264,7 +331,7 @@
       <button onclick="submit({'action': 'toggleleftlamp'}, this)" class=big>☀</button>
     </td>
     <td>
-      <button onclick="submit({'action': 'lampcontrol', 'left': 0, 'right': 0}, this)" class=big>☼☼</button>
+      <button id=lamps onclick="submit({'action': 'lampcontrol', 'left': 0, 'right': 0}, this)" class=big>☼☼</button>
     </td>
     <td>
       <button onclick="submit({'action': 'togglerightlamp'}, this)" class=big>☀</button>
@@ -298,33 +365,16 @@
       <output id=dissolvevalue>&nbsp;&nbsp;2.5 Sek.</output>
     </td>
   </tr>
-  <tr>
-    <td colspan=3>
-      <hr>
-    </td>
-  </tr>
-  <tr>
-    <td class=right>
-      <label for=maxinput>MAX BRIGHTNESS</label>
-    </td>
-    <td class=centered>
-      <input id=maxinput type=range min=0 max=255 value=255 step=1 onclick="focus()" />
-    </td>
-    <td class=left>
-      <output id=maxvalue>255</output>
-    </td>
-  </tr>
-  <tr>
     <td colspan=3>
       <hr>
     </td>
   </tr>
   <tr>
     <td>
-      <button onclick="submit({'action': 'enterPCmode'}, this)">PC MODE</button>
+      <button id=pcmode onclick="submit({'action': 'togglePC'}, this)">PC MODE</button>
     </td>
     <td>
-      <button onclick="submit({'action': 'end'}, this)">END</button>
+      <button id=end onclick="submit({'action': 'end'}, this)">END</button>
     </td>
     <td>
       <button onclick="toggleDark()">DARK</button>
