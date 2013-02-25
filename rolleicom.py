@@ -57,8 +57,9 @@ class RolleiCom():
             if ret is not char:
                 if not self.connected():
                     return (False, None, 'Projector not online')
-                print 'echo %s not %s' % (ret, char)
-                self.serial.read(10)
+                else:
+                    self.serial.read(self.serial.inWaiting())
+                    return (False, None, 'Projector echoed %s instead of %s' % (ret, char))
         if expectoutput:
             out = self.serial.readline().strip()
         else:
@@ -106,6 +107,7 @@ class RolleiCom():
         if not out == readcmd:
             sendstop()
             if self.connected():
+                return
                 raise Exception('port did not echo read command 0x02. (read %s)' % out.encode('hex'))
             else:
                 raise Exception('Projector is offline')
@@ -115,12 +117,14 @@ class RolleiCom():
         out = self.serial.read(2)
         if not out == starthex:
             sendstop()
+            return
             raise Exception('port did not echo start address "%s". (read %s)' % (starthex.encode('hex'), out.encode('hex')))
 
         self.serial.write(lengthhex)
         out = self.serial.read(2)
         if not out == lengthhex:
             sendstop()
+            return
             raise Exception('port did not echo length "%s". (read %s)' % (lengthhex.encode('hex'), out.encode('hex')))
 
         for byte in xrange(length):
@@ -139,7 +143,7 @@ class RolleiCom():
             outbuf[byte] = cleaned
 
             if not quiet:
-                sys.stdout.write('%s ' % cleaned.encode('hex'))
+                sys.stdout.write("{0:02x} ".format(ord(cleaned)))
 
             if ord(out) < 0x10:
                 sendstop()
@@ -377,11 +381,50 @@ class RolleiCom():
     #  6223 - brightness: two bytes 0..255
     #  6187 - last LM: command, i.e., as int [200..207]
     #  6188 - last set dissolve time
+    # 16617 - bit 1 bin(1) 0 if AF is on; 1 if AF is off
+    # 16617 - bit 2 bin(2) 0 if timer display is off; 1 if timer display is on
+    # 16617 - bit 3 bin(4) 0 if dissolve display is off; 1 if dissolve display is on
+    # 16617 - bit 6 bin(32) 0 if pause light is off; 1 if pause light is on
     # 16617 - bit 7 bin(64) 0 if any lamp on; 1 if both lamps off
-    # 16617 - bit 1 bin(1) 0 if any AF is on; 1 if AF is off
-    # 16618 - current slide as byte [0..255]
+    # 16618 - 3rd digit of slide number in 7-segment display
+    # 16619 - 2nd digit of slide number in 7-segment display
+    # 16620 - 1st digit of slide number in 7-segment display
     # 16621 - stop/go bit 7 bin(64) 0 if go and 1 if stopped
-    # 16624 - PC mode bits bin(32)+bin(16) 0 if PC mode on and 1 otherwise
+    # 16624 - last character in dissolve 7-segment display
+    #         derive PC mode enable with bits bin(32)+bin(16) 0 if PC mode on and 1 otherwise
+    # 16625 - second character in dissolve 7-segment display
+    # 16626 - third character in dissolve 7-segment display
+    # 16631 - timer LED on/off: bit 7 0 = aus, 1 = an
+    # 16638 and 16641 - remote button currently being pressed
+    #                   0 = no button being pressed
+    #                   1 = end
+    #                   2 = dissolve long
+    #                   5 = focus out
+    #                   7 = stop
+    #                   9 = focus in
+    #                  10 = dissolve medium
+    #                  11 = forward
+    #                  13 = backward
+    #                  14 = dissolve short
+    #                  15 = memo
+    #                  16 = timer
+    #                 128 = 0
+    #                 129 = 1
+    #                 130 = 2
+    #                 131 = 3
+    #                 132 = 4
+    #                 133 = 5
+    #                 134 = 6
+    #                 135 = 7
+    #                 136 = 8
+    #                 137 = 9
+    #                 192 = enter
+    #                 193 = autofocus
+    #                 194 = timer +
+    #                 195 = timer -
+    #                 196 = mode
+    #                 197 = modul
+    # 16640 - code of last pressed remote button
 
     def firmwarerevision(self):
         # Returns string of firmware version
