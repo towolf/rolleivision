@@ -52,7 +52,7 @@
     width: 25%;
   }
   #xhr_poll_status, #projector_status {
-    font-size: 75%;:
+    font-size: 75%;
     cursor: pointer;
   }
   #xhr_poll_status #xhr_poll_status_off, #projector_status_offline {
@@ -115,9 +115,11 @@
 <script>
   var submit = function(args, origin) {
     XHR.get('/rolleicom', args, function(x, r) {
-      var success = r.response[0], value = r.response[1], status = r.response[2];
-      res = document.getElementById('res');
-      err = document.getElementById('error');
+      var success = r.response[0],
+          value = r.response[1],
+          status = r.response[2];
+      var res = document.getElementById('res');
+      var err = document.getElementById('error');
       if (success) {
         res.innerHTML = 'status: ' + status;
         err.innerHTML = '';
@@ -125,34 +127,34 @@
         err.innerHTML = 'error: ' + status;
         res.innerHTML = '';
       }
-      if (typeof(value) == 'boolean') {
-        if (value == true) {
-          origin.className += " on";
+      if (typeof(value) === 'boolean') {
+        if (value === true) {
+          origin.className += ' on';
         } else {
           origin.className = origin.className.replace(/(?:^|\s)on(?!\S)/g , '');
         }
       }
     });
-  }
+  };
   var throttle = function(func, wait) {
     var timeout;
     return function() {
       var context = this, args = arguments;
       if (!timeout) {
-        // the first time the event fires, we setup a timer, which 
-        // is used as a guard to block subsequent calls; once the 
+        // the first time the event fires, we setup a timer, which
+        // is used as a guard to block subsequent calls; once the
         // timer's handler fires, we reset it and create a new one
         timeout = setTimeout(function() {
           timeout = null;
           func.apply(context, args);
         }, wait);
       }
-    }
-  }
+    };
+  };
   function handleKeyPress(e, form) {
       // inout onkeypress="handleKeyPress(event,this.form)"
-    var key=e.keyCode || e.which;
-    if (key == 13) {
+    var key = e.keyCode || e.which;
+    if (key === 13) {
       form.submit();
     }
   }
@@ -160,91 +162,92 @@
     return document.querySelector(expr);
   }
   function toggleDark() {
-    if (document.body.className.match('dark'))
+    if (document.body.className.match('dark')) {
       document.body.className = document.body.className.replace(/(?:^|\s)dark(?!\S)/g , '');
-    else
-      document.body.className += " dark";
+    } else {
+      document.body.className += ' dark';
+    }
   }
   var setLeftBrightness = function(value) {
-    submit({'action': 'brightnessleft', 'brightness': value}, this)
+    submit({'action': 'brightnessleft', 'brightness': value}, this);
     q('#bleftvalue').value = ('\xA0\xA0\xA0\xA0\xA0' + (value / 255 * 100).toFixed(1)).slice(-5);
-  }
+  };
   var setRightBrightness = function(value) {
-    submit({'action': 'brightnessright', 'brightness': value}, this)
+    submit({'action': 'brightnessright', 'brightness': value}, this);
     q('#brightvalue').value = ('\xA0\xA0\xA0\xA0\xA0' + (value / 255 * 100).toFixed(1)).slice(-5);
-  }
+  };
   var setDissolveTime = function(value) {
-    submit({'action': 'dissolvefor', 'duration': value}, this)
+    submit({'action': 'dissolvefor', 'duration': value}, this);
     q('#dissolvevalue').value = ('\xA0\xA0\xA0' + (value / 10).toFixed(1)).slice(-5) + ' Sek.';
-  }
+  };
   var checkConnection = function() {
     XHR.poll(5, '/rolleicom', {'action': 'connected'}, function(x, r) {
-      response = r.response;
+      var response = r.response;
       if (response) {
         document.getElementById('projector_status_online').style.display = '';
         document.getElementById('projector_status_offline').style.display = 'none';
       } else {
         document.getElementById('projector_status_online').style.display = 'none';
         document.getElementById('projector_status_offline').style.display = '';
-      } 
+      }
     });
-  }
+  };
   var pollStatus = function() {
     XHR.poll(1, '/rolleicom', {'action': 'getstatus', 'verbose': true}, function(x, r) {
       document.getElementById('res').innerHTML = r.response;
     });
-  }
+  };
 
   window.onload = function() {
-    bleft = document.getElementById('bleftinput');
-    bright = document.getElementById('brightinput');
-    dissolve = document.getElementById('dissolveinput');
-    pcmode = document.getElementById('pcmode');
-    stopgo = document.getElementById('stopgo');
+    var bleft = document.getElementById('bleftinput'),
+    bright = document.getElementById('brightinput'),
+    dissolve = document.getElementById('dissolveinput'),
+    pcmode = document.getElementById('pcmode'),
+    stopgo = document.getElementById('stopgo'),
     autofocus = document.getElementById('autofocus');
 
     bleft.addEventListener('change', throttle(function() {
-      setLeftBrightness(bleft.value)
+      setLeftBrightness(bleft.value);
     }, 50), false);
     bright.addEventListener('change', throttle(function() {
-      setRightBrightness(bright.value)
+      setRightBrightness(bright.value);
     }, 150), false);
     dissolve.addEventListener('change', throttle(function() {
-      setDissolveTime(dissolve.value)
+      setDissolveTime(dissolve.value);
     }, 250), false);
 
     var initPCmode = function() {
       XHR.get('/rolleicom', {'action': 'queryPCmode'}, function(x, r) {
         var value = r.response[1];
         if (value === true) {
-          pcmode.className = "on";
+          pcmode.className = 'on';
         } else {
-          pcmode.className = "";
+          pcmode.className = '';
         }
         checkConnection();
-      })
+      });
     };
     var initStopped = function() {
       XHR.get('/rolleicom', {'action': 'querystopped'}, function(x, r) {
         var value = r.response[1];
         if (value === true) {
-          stopgo.className = "on";
+          stopgo.className = 'on';
         } else {
-          stopgo.className = "";
+          stopgo.className = '';
         }
         initPCmode();
-      })
+      });
     };
     var initAF = function() {
       XHR.get('/rolleicom', {'action': 'queryAF'}, function(x, r) {
         var value = r.response[1];
         if (value === true) {
-          autofocus.className = "on";
+          autofocus.className = 'on';
         } else {
-          autofocus.className = "";
+          autofocus.className = '';
         }
         initStopped();
-      })
+      });
     };
     var initDissolve = function() {
       XHR.get('/rolleicom', {'action': 'querydissolve'}, function(x, r) {
@@ -254,7 +257,7 @@
           q('#dissolvevalue').value = ('\xA0\xA0\xA0' + (value / 10).toFixed(1)).slice(-5) + ' Sek.';
         }
         initAF();
-      })
+      });
     };
     var initBrightness = function() {
       XHR.get('/rolleicom', {'action': 'querybrightness'}, function(x, r) {
@@ -266,11 +269,11 @@
           q('#brightvalue').value = ('\xA0\xA0\xA0\xA0\xA0' + (bright.value / 255 * 100).toFixed(1)).slice(-5);
         }
         initDissolve();
-      })
+      });
     };
 
     initBrightness();
-  }
+  };
 </script>
 <table>
   <tr>
