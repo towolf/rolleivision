@@ -22,6 +22,10 @@ class RolleiCom():
                       'p': 'bad parameter',
                       'j': 'cmd processing',
                       '?': '<not implemented>'}
+        self.SEGMENTMAP = {'\x7E': '0', '\x30': '1', '\x6D': '2', '\x79': '3', '\x33': '4',
+                           '\x5B': '5', '\x5F': '6', '\x70': '7', '\x7F': '8', '\x7B': '9',
+                           '\x77': 'A', '\x1F': 'b', '\x4E': 'C', '\x3D': 'd', '\x4F': 'E',
+                           '\x47': 'F', '\x67': 'P', '\x00': ' '}
 
     def getstatus(self, verbose = False):
         # the char sent for status report is SMALL SHARP S in DOS codepage cp437
@@ -438,7 +442,9 @@ class RolleiCom():
 
     def queryPCmode(self):
         # Return True when PC mode is engaged
-        return (True, not ord(self.readmem(16624, 1)) & 48, '')
+        # The three bytes from 16624 code 7-segment display to " PC"
+        # or (0b01001110, 0b01100111, 0b00000000)
+        return (True, self.readmem(16624, 3) == '\x4e\x67\x00', '')
 
     def querystopped(self):
         # Return True if stop/go function has paused the projector
@@ -460,6 +466,17 @@ class RolleiCom():
     def querydissolve(self):
         # Returns currently set dissolve time for next slide change
         return (True, ord(self.readmem(6188, 1)), '')
+
+    def querydisplay(self):
+        # Returns what is currently displayed in 3 digit 7-segment-display
+        digits = []
+        for byte in self.readmem(16624, 3):
+            if byte > 128:
+                digits.append(self.SEGMENTMAP[chr(byte ^ 128)] + '.')
+            else:
+                digits.append(self.SEGMENTMAP[chr(byte)])
+        return (True, ''.join(reversed(digits)), '')
+
     def sigint_handler(self, signal, frame):
         print '\n\nYou pressed Ctrl+C!\n\n'
         self.serial.flushOutput()
