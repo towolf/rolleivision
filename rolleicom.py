@@ -368,18 +368,20 @@ class RolleiCom():
         cmd = 'B2:%03d' % slide        # Bild zwei
         return self.submit(cmd, wait)
 
-    def goto(self, position, wait = False):
-        raise RuntimeError('Does not work for some reason')
-        if not 0 < position <= 50:
+    def gotoline(self, line, wait = False):
+        # Go to line in programme table and commence show
+        if not 0 <= line <= 999:
+            raise ValueError('Slide number is a value between 0 and 999')
+        cmd = 'GZ:%03d' % line        # Gehe zu Zeile
+        return self.submit(cmd, wait)
+
+    def gotoslide(self, slide, wait = False):
+        # In Test mode: Commence show at first programme line containing slide
+        # In Manual mode: Go to first programme line containing slide
+        if not 0 <= slide <= 50:
             raise ValueError('Slide number is a value between 0 and 255')
-
-        self.reset()
-        self.enablePC()
-        self.focusin()
-
-        while self.currentslide(wait = True) < position:
-            self.focusin(wait = True)
-        return self.currentslide()
+        cmd = 'GB:%03d' % slide        # Gehe zu Bild
+        return self.submit(cmd, wait)
 
     # Information derived from direct binary memory access
     #
