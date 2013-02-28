@@ -107,25 +107,25 @@ class RolleiCom():
         if not out == readcmd:
             sendstop()
             if self.connected():
-                return
                 raise Exception('port did not echo read command 0x02. (read %s)' % out.encode('hex'))
             else:
                 raise Exception('Projector is offline')
 
+        for char in starthex:
+            self.serial.write(char)
+            out = self.serial.read()
+            if not out == char:
+                sendstop()
+                err = (ord(char), ord(out), starthex.encode('hex'))
+                raise Exception('got echo %02x for %02x in start address "%s". ' % err)
 
-        self.serial.write(starthex)
-        out = self.serial.read(2)
-        if not out == starthex:
-            sendstop()
-            return
-            raise Exception('port did not echo start address "%s". (read %s)' % (starthex.encode('hex'), out.encode('hex')))
-
-        self.serial.write(lengthhex)
-        out = self.serial.read(2)
-        if not out == lengthhex:
-            sendstop()
-            return
-            raise Exception('port did not echo length "%s". (read %s)' % (lengthhex.encode('hex'), out.encode('hex')))
+        for char in lengthhex:
+            self.serial.write(char)
+            out = self.serial.read()
+            if not out == char:
+                sendstop()
+                err = (ord(char), ord(out), lengthhex.encode('hex'))
+                raise Exception('got echo %02x for %02x in length "%s". ' % err)
 
         for byte in xrange(length):
             out = self.serial.read()
