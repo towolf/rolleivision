@@ -1,14 +1,16 @@
 #!/usr/bin/env python
 
 from serial import Serial
+import signal
 
 class RolleiCom():
     def __init__(self, *args, **kwargs):
         #ensure that a reasonable timeout is set
-        timeout = kwargs.get('timeout', 0.1)
-        if timeout < 0.01: timeout = 0.1
+        timeout = kwargs.get('timeout', 0.05)
+        if timeout < 0.01: timeout = 0.05
         kwargs['timeout'] = timeout
         self.serial = Serial(*args, **kwargs)
+        signal.signal(signal.SIGINT, self.sigint_handler)
         self.EMITSLEFT = False
         self.EMITSRIGHT = False
         self.CODES = {'v': 'command accepted',
@@ -458,3 +460,15 @@ class RolleiCom():
     def querydissolve(self):
         # Returns currently set dissolve time for next slide change
         return (True, ord(self.readmem(6188, 1)), '')
+    def sigint_handler(self, signal, frame):
+        print '\n\nYou pressed Ctrl+C!\n\n'
+        self.serial.flushOutput()
+        if self.serial.inWaiting() > 0:
+            print "Discarding %d waiting RX bytes" % self.serial.inWaiting()
+            self.serial.flushInput()
+        self.serial.write('\x04')
+        if self.serial.read() == '\x04':
+            print "Successfully cancelled TX"
+        else:
+            self.serial.readall()
+
