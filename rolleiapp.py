@@ -3,7 +3,7 @@
 import web, json, rolleicom
 
 FUNCS = rolleicom.RolleiCom.__dict__.keys()
-r = rolleicom.RolleiCom('/dev/ttyUSB0')
+r = rolleicom.RolleiCom('/dev/ttyAMA0')
 
 urls = (
     '/rolleicom', 'rolleicom'
@@ -13,8 +13,6 @@ class rolleicom:
 
     def GET(self):
         input = web.input(action = None)
-        web.header('Access-Control-Allow-Origin', '*')
-        web.header('Access-Control-Allow-Credentials', 'true')
         web.header('Content-Type', 'application/json')
 
         action = input.action
@@ -37,10 +35,11 @@ class rolleicom:
             return json.dumps({'response': response, "action": action, "input": input})
 
     def POST(self, name):
-        web.header('Access-Control-Allow-Origin', '*')
-        web.header('Access-Control-Allow-Credentials', 'true')
         data = web.data()
         return {'message': "POST OK! %s" % data}
+
+# For serving using any wsgi server
+wsgi_app = web.application(urls, globals()).wsgifunc()
 
 if __name__ == "__main__":
     app = web.application(urls, globals())

@@ -60,12 +60,12 @@ class RolleiCom():
         for char in cmd + '\r':
             self.serial.write(char)
             ret = self.serial.read()
-            if ret is not char:
+            if not ret == char:
                 if not self.connected():
                     return (False, None, 'Projector not online')
                 else:
                     self.serial.read(self.serial.inWaiting())
-                    return (False, None, 'Projector echoed %s instead of %s' % (ret, char))
+                    return (False, None, 'Projector echoed %s (%d) instead of %s (%d)' % (ret, ord(ret), char, ord(char)))
         if expectoutput:
             out = self.serial.readline().strip()
         else:

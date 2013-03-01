@@ -2,6 +2,7 @@
 <title>RolleiVision MSC Remote</title>
 <meta charset=utf-8>
 <meta name=viewport content="width=device-width, user-scalable=no">
+<link href="/static/favicon.ico" rel="icon" type="image/x-icon">
 <style>
   body {
     font-family: monospace;
@@ -112,6 +113,7 @@
 </style>
 
 <script src=/static/xhr.js></script>
+<script src=/static/mousetrap.min.js></script>
 <script>
   var submit = function(args, origin) {
     XHR.get('/rolleicom', args, function(x, r) {
@@ -121,7 +123,7 @@
       var res = document.getElementById('res');
       var err = document.getElementById('error');
       if (success) {
-        res.innerHTML = 'status: ' + status;
+        res.innerHTML = status + ' response';
         err.innerHTML = '';
       } else {
         err.innerHTML = 'error: ' + status;
@@ -136,6 +138,7 @@
       }
     });
   };
+
   var throttle = function(func, wait) {
     var timeout;
     return function() {
@@ -151,16 +154,7 @@
       }
     };
   };
-  function handleKeyPress(e, form) {
-      // inout onkeypress="handleKeyPress(event,this.form)"
-    var key = e.keyCode || e.which;
-    if (key === 13) {
-      form.submit();
-    }
-  }
-  function q(expr) {
-    return document.querySelector(expr);
-  }
+
   function toggleDark() {
     if (document.body.className.match('dark')) {
       document.body.className = document.body.className.replace(/(?:^|\s)dark(?!\S)/g , '');
@@ -168,18 +162,22 @@
       document.body.className += ' dark';
     }
   }
+
   var setLeftBrightness = function(value) {
     submit({'action': 'brightnessleft', 'brightness': value}, this);
-    q('#bleftvalue').value = ('\xA0\xA0\xA0\xA0\xA0' + (value / 255 * 100).toFixed(1)).slice(-5);
+    document.getElementById('bleftvalue').value = ('\xA0\xA0\xA0\xA0\xA0' + (value / 255 * 100).toFixed(1)).slice(-5);
   };
+
   var setRightBrightness = function(value) {
     submit({'action': 'brightnessright', 'brightness': value}, this);
-    q('#brightvalue').value = ('\xA0\xA0\xA0\xA0\xA0' + (value / 255 * 100).toFixed(1)).slice(-5);
+    document.getElementById('brightvalue').value = ('\xA0\xA0\xA0\xA0\xA0' + (value / 255 * 100).toFixed(1)).slice(-5);
   };
+
   var setDissolveTime = function(value) {
     submit({'action': 'dissolvefor', 'duration': value}, this);
-    q('#dissolvevalue').value = ('\xA0\xA0\xA0' + (value / 10).toFixed(1)).slice(-5) + ' Sek.';
+    document.getElementById('dissolvevalue').value = ('\xA0\xA0\xA0' + (value / 10).toFixed(1)).slice(-5) + ' Sek.';
   };
+
   var checkConnection = function() {
     XHR.poll(5, '/rolleicom', {'action': 'connected'}, function(x, r) {
       var response = r.response;
@@ -192,11 +190,89 @@
       }
     });
   };
+
   var pollStatus = function() {
     XHR.poll(1, '/rolleicom', {'action': 'getstatus', 'verbose': true}, function(x, r) {
-      document.getElementById('res').innerHTML = r.response;
+      document.getElementById('res').innerHTML = r.response + ' now';
     });
   };
+
+  Mousetrap.bind(['<'], function(e) {
+    submit({'action': 'next'}, document.getElementById('forward')) 
+    return false;
+  });
+
+  Mousetrap.bind(['>'], function(e) {
+    submit({'action': 'previous'}, document.getElementById('back'))
+    return false;
+  });
+
+  Mousetrap.bind(['e'], function(e) {
+    submit({'action': 'end'}, document.getElementById('end'))
+    return false;
+  });
+
+  Mousetrap.bind(['+'], function(e) {
+    submit({'action': 'focusin'}, document.getElementById('focusin'))
+    return false;
+  });
+
+  Mousetrap.bind(['-'], function(e) {
+    submit({'action': 'focusout'}, document.getElementById('focusout'))
+    return false;
+  });
+
+  Mousetrap.bind(['1'], function(e) {
+    submit({'action': 'submit', 'cmd': 'LM:200'}, null);
+  });
+
+  Mousetrap.bind(['2'], function(e) {
+    submit({'action': 'submit', 'cmd': 'LM:201'}, null);
+  });
+
+  Mousetrap.bind(['3'], function(e) {
+    submit({'action': 'submit', 'cmd': 'LM:202'}, null);
+  });
+
+  Mousetrap.bind(['4'], function(e) {
+    submit({'action': 'submit', 'cmd': 'LM:203'}, null);
+  });
+
+  Mousetrap.bind(['5'], function(e) {
+    submit({'action': 'submit', 'cmd': 'LM:204'}, null);
+  });
+
+  Mousetrap.bind(['6'], function(e) {
+    submit({'action': 'submit', 'cmd': 'LM:205'}, null);
+  });
+
+  Mousetrap.bind(['7'], function(e) {
+    submit({'action': 'submit', 'cmd': 'LM:206'}, null);
+  });
+
+  Mousetrap.bind(['8'], function(e) {
+    submit({'action': 'submit', 'cmd': 'LM:207'}, null);
+  });
+
+  // Suspend XHR requests when tab is not visible
+  (function() {
+    var hidden = "hidden";
+
+    if (hidden in document)
+      document.addEventListener("visibilitychange", onchange);
+    else if ((hidden = "mozHidden") in document)
+      document.addEventListener("mozvisibilitychange", onchange);
+    else if ((hidden = "webkitHidden") in document)
+      document.addEventListener("webkitvisibilitychange", onchange);
+
+    function onchange(evt) {
+      if (document[hidden]) {
+        XHR.halt();
+      } else {
+        XHR.run();
+      }
+    }
+  })();
 
   window.onload = function() {
     var bleft = document.getElementById('bleftinput'),
@@ -207,14 +283,11 @@
     autofocus = document.getElementById('autofocus');
 
     bleft.addEventListener('change', throttle(function() {
-      setLeftBrightness(bleft.value);
-    }, 50), false);
+      setLeftBrightness(bleft.value)}, 50), false);
     bright.addEventListener('change', throttle(function() {
-      setRightBrightness(bright.value);
-    }, 150), false);
+      setRightBrightness(bright.value)}, 50), false);
     dissolve.addEventListener('change', throttle(function() {
-      setDissolveTime(dissolve.value);
-    }, 250), false);
+      setDissolveTime(dissolve.value)}, 250), false);
 
     var initPCmode = function() {
       XHR.get('/rolleicom', {'action': 'queryPCmode'}, function(x, r) {
@@ -225,6 +298,7 @@
           pcmode.className = '';
         }
         checkConnection();
+        pollStatus();
       });
     };
     var initStopped = function() {
@@ -254,7 +328,7 @@
         var success = r.response[0], value = r.response[1], status = r.response[2];
         if (success) {
           dissolve.value = value;
-          q('#dissolvevalue').value = ('\xA0\xA0\xA0' + (value / 10).toFixed(1)).slice(-5) + ' Sek.';
+          document.getElementById('dissolvevalue').value = ('\xA0\xA0\xA0' + (value / 10).toFixed(1)).slice(-5) + ' Sek.';
         }
         initAF();
       });
@@ -265,8 +339,8 @@
         if (success) {
           bleft.value = value[0];
           bright.value = value[1];
-          q('#bleftvalue').value = ('\xA0\xA0\xA0\xA0\xA0' + (bleft.value / 255 * 100).toFixed(1)).slice(-5);
-          q('#brightvalue').value = ('\xA0\xA0\xA0\xA0\xA0' + (bright.value / 255 * 100).toFixed(1)).slice(-5);
+          document.getElementById('bleftvalue').value = ('\xA0\xA0\xA0\xA0\xA0' + (bleft.value / 255 * 100).toFixed(1)).slice(-5);
+          document.getElementById('brightvalue').value = ('\xA0\xA0\xA0\xA0\xA0' + (bright.value / 255 * 100).toFixed(1)).slice(-5);
         }
         initDissolve();
       });
@@ -323,7 +397,7 @@
   </tr>
   <tr>
     <td>
-      <label for=lleftinput>LEFT</label>
+      <span>LEFT</span>
     </td>
     <td>
     </td>
@@ -344,14 +418,14 @@
   </tr>
   <tr>
     <td>
-      <input id=bleftinput type=range min=0 max=255 value=255 step=1 onclick="focus()" />
+      <input id=bleftinput type=range class=mousetrap min=0 max=255 value=255 step=1 onclick="focus()" />
     </td>
     <td>
       <output id=bleftvalue>100.0</output>
       <output id=brightvalue>100.0</output>
     </td>
     <td>
-      <input id=brightinput type=range min=0 max=255 value=255 step=1 onclick="focus()" />
+      <input id=brightinput type=range class=mousetrap min=0 max=255 value=255 step=1 onclick="focus()" />
     </td>
   </tr>
   <tr>
@@ -363,7 +437,7 @@
       <label for=dissolveinput>DISSOLVE</label>
     </td>
     <td class=centered>
-      <input id=dissolveinput type=range min=0 max=255 value=25 step=1 onclick="focus()" />
+      <input id=dissolveinput type=range class=mousetrap min=0 max=255 value=25 step=1 onclick="focus()" />
     </td>
     <td class=left>
       <output id=dissolvevalue>&nbsp;&nbsp;2.5 Sek.</output>
