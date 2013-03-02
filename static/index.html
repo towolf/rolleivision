@@ -64,17 +64,15 @@
     font-weight: bold;
     color: #00FF00;
   }
-  button {
-    height: 80px;
-    width: 100%;
-    font-family: monospace;
-  }
   hr {
     border: 1px solid #dedede;
     border-bottom: none;
     margin: 10px 0 10px 0;
   }
   button {
+    height: 80px;
+    width: 100%;
+    font-family: monospace;
     display: block;
     padding: 0;
     background: #f5f5f5;
@@ -82,6 +80,11 @@
     border-top: 1px solid #eee;
     border-left: 1px solid #eee;
     color: #565656;
+    /*
+     * transition: background .25s ease-in-out;
+     * -moz-transition: background .25s ease-in-out;
+     * -webkit-transition: background .25s ease-in-out;
+     */
   }
   button img {
     margin:0 3px -3px 0 !important;
@@ -109,6 +112,29 @@
    color: #bb7c16;
    background: #f9e6c8;
    border: 1px solid #e5991f;
+ }
+ .green {
+   background: green;
+ }
+ #shortcuthelp {
+   padding: 12px;
+   left: 50%;
+   top: 50%;
+   margin: -350px 0 0 -150px;
+   width: 300px;
+   z-index: 1002;
+   color: #FFF;
+   position: fixed;
+   text-align: center;
+   font-weight: bold;
+   background: #222 none repeat scroll 0;
+   overflow: hidden;
+   opacity: .85;
+   border-radius: 10px;
+ }
+ .hidden {
+   display: none;
+   visibility: hidden;
  }
 </style>
 
@@ -197,61 +223,113 @@
     });
   };
 
+  Mousetrap.bind(['?'], function(e) {
+    helpdiv = document.getElementById('shortcuthelp');
+    if (helpdiv.className != 'hidden') {
+        helpdiv.className = 'hidden';
+    } else {
+        helpdiv.className = '';
+    }
+    return false;
+  });
+
   Mousetrap.bind(['<'], function(e) {
     submit({'action': 'next'}, document.getElementById('forward')) 
     return false;
   });
 
+  Mousetrap.bind(['<'], function(e) {
+    submit({'action': 'next'}) 
+    return false;
+  });
+
   Mousetrap.bind(['>'], function(e) {
-    submit({'action': 'previous'}, document.getElementById('back'))
+    submit({'action': 'previous'})
     return false;
   });
 
   Mousetrap.bind(['e'], function(e) {
-    submit({'action': 'end'}, document.getElementById('end'))
+    submit({'action': 'end'})
     return false;
   });
 
   Mousetrap.bind(['+'], function(e) {
-    submit({'action': 'focusin'}, document.getElementById('focusin'))
+    submit({'action': 'focusin'})
     return false;
   });
 
   Mousetrap.bind(['-'], function(e) {
-    submit({'action': 'focusout'}, document.getElementById('focusout'))
+    submit({'action': 'focusout'})
     return false;
   });
 
+  Mousetrap.bind(['h'], function(e) {
+    var element = document.getElementById('bleftinput');
+    element.stepDown(10)
+    var evt = document.createEvent("HTMLEvents");
+    evt.initEvent("change", false, true);
+    element.dispatchEvent(evt)
+    return false;
+  });
+
+  Mousetrap.bind(['j'], function(e) {
+    var element = document.getElementById('bleftinput');
+    element.stepUp(10)
+    var evt = document.createEvent("HTMLEvents");
+    evt.initEvent("change", false, true);
+    element.dispatchEvent(evt)
+    return false;
+  });
+
+  Mousetrap.bind(['k'], function(e) {
+    var element = document.getElementById('brightinput');
+    element.stepDown(10)
+    var evt = document.createEvent("HTMLEvents");
+    evt.initEvent("change", false, true);
+    element.dispatchEvent(evt)
+    return false;
+  });
+
+  Mousetrap.bind(['l'], function(e) {
+    var element = document.getElementById('brightinput');
+    element.stepUp(10)
+    var evt = document.createEvent("HTMLEvents");
+    evt.initEvent("change", false, true);
+    element.dispatchEvent(evt)
+    return false;
+  });
+
+
   Mousetrap.bind(['1'], function(e) {
-    submit({'action': 'submit', 'cmd': 'LM:200'}, null);
+    submit({'action': 'submit', 'cmd': 'LM:200'});
   });
 
   Mousetrap.bind(['2'], function(e) {
-    submit({'action': 'submit', 'cmd': 'LM:201'}, null);
+    submit({'action': 'submit', 'cmd': 'LM:201'});
   });
 
   Mousetrap.bind(['3'], function(e) {
-    submit({'action': 'submit', 'cmd': 'LM:202'}, null);
+    submit({'action': 'submit', 'cmd': 'LM:202'});
   });
 
   Mousetrap.bind(['4'], function(e) {
-    submit({'action': 'submit', 'cmd': 'LM:203'}, null);
+    submit({'action': 'submit', 'cmd': 'LM:203'});
   });
 
   Mousetrap.bind(['5'], function(e) {
-    submit({'action': 'submit', 'cmd': 'LM:204'}, null);
+    submit({'action': 'submit', 'cmd': 'LM:204'});
   });
 
   Mousetrap.bind(['6'], function(e) {
-    submit({'action': 'submit', 'cmd': 'LM:205'}, null);
+    submit({'action': 'submit', 'cmd': 'LM:205'});
   });
 
   Mousetrap.bind(['7'], function(e) {
-    submit({'action': 'submit', 'cmd': 'LM:206'}, null);
+    submit({'action': 'submit', 'cmd': 'LM:206'});
   });
 
   Mousetrap.bind(['8'], function(e) {
-    submit({'action': 'submit', 'cmd': 'LM:207'}, null);
+    submit({'action': 'submit', 'cmd': 'LM:207'});
   });
 
   // Suspend XHR requests when tab is not visible
@@ -281,6 +359,7 @@
     pcmode = document.getElementById('pcmode'),
     stopgo = document.getElementById('stopgo'),
     autofocus = document.getElementById('autofocus');
+    lamps = document.getElementById('lamps');
 
     bleft.addEventListener('change', throttle(function() {
       setLeftBrightness(bleft.value)}, 50), false);
@@ -323,6 +402,17 @@
         initStopped();
       });
     };
+    var initLamps = function() {
+      XHR.get('/rolleicom', {'action': 'querylamps'}, function(x, r) {
+        var value = r.response[1];
+        if (value === true) {
+          lamps.className = 'big on';
+        } else {
+          lamps.className = 'big';
+        }
+        initAF();
+      });
+    };
     var initDissolve = function() {
       XHR.get('/rolleicom', {'action': 'querydissolve'}, function(x, r) {
         var success = r.response[0], value = r.response[1], status = r.response[2];
@@ -330,7 +420,7 @@
           dissolve.value = value;
           document.getElementById('dissolvevalue').value = ('\xA0\xA0\xA0' + (value / 10).toFixed(1)).slice(-5) + ' Sek.';
         }
-        initAF();
+        initLamps();
       });
     };
     var initBrightness = function() {
@@ -410,7 +500,7 @@
       <button onclick="submit({'action': 'toggleleftlamp'}, this)" class=big>☀</button>
     </td>
     <td>
-      <button id=lamps onclick="submit({'action': 'lampcontrol', 'left': 0, 'right': 0}, this)" class=big>☼☼</button>
+      <button id=lamps onclick="submit({'action': 'lampcontrol', 'left': false, 'right': false}, this)" class=big>☼☼</button>
     </td>
     <td>
       <button onclick="submit({'action': 'togglerightlamp'}, this)" class=big>☀</button>
@@ -466,3 +556,88 @@
     </td>
   </tr>
 </table>
+<div id=shortcuthelp class=hidden>
+KEYBOARD SHORTCUTS
+
+<table>
+<tbody>
+<tr>
+<td colspan=2><hr></td>
+</tr>
+<tr>
+<td class=right>1</td>
+<td class=left>Left lamp on</td>
+</tr>
+<tr>
+<td class=right>2</td>
+<td class=left>Right lamp on</td>
+</tr>
+<tr>
+<td class=right>3</td>
+<td class=left>Left lamp off</td>
+</tr>
+<tr>
+<td class=right>4</td>
+<td class=left>Right Lamp off</td>
+</tr>
+<tr>
+<td class=right>5</td>
+<td class=left>Dissolve lamps left to right</td>
+</tr>
+<tr>
+<td class=right>6</td>
+<td class=left>Dissolve lamps right to left</td>
+</tr>
+<tr>
+<td class=right>7</td>
+<td class=left>Both lamps on</td>
+</tr>
+<tr>
+<td class=right>8</td>
+<td class=left>Both lamps off</td>
+</tr>
+<tr>
+<td colspan=2><hr></td>
+</tr>
+<tr>
+<td class=right>h</td>
+<td class=left>Decrease brightness left</td>
+</tr>
+<tr>
+<td class=right>j</td>
+<td class=left>Increase brightness left</td>
+</tr>
+<tr>
+<td class=right>k</td>
+<td class=left>Decrease brightness right</td>
+</tr>
+<tr>
+<td class=right>l</td>
+<td class=left>Increase brightness right</td>
+</tr>
+<tr>
+<td colspan=2><hr></td>
+</tr>
+<tr>
+<td class=right>&lt;</td>
+<td class=left>Next slide</td>
+</tr>
+<tr>
+<td class=right>&gt;</td>
+<td class=left>Previous slide</td>
+</tr>
+<tr>
+<td class=right>+</td>
+<td class=left>Focus in</td>
+</tr>
+<tr>
+<td class=right>-</td>
+<td class=left>Focus out</td>
+</tr>
+<tr>
+<td class=right>e</td>
+<td class=left>End and rewind</td>
+</tr>
+</tbody>
+</table>
+</div>
