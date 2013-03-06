@@ -132,6 +132,9 @@
    opacity: .85;
    border-radius: 10px;
  }
+ #shortcuthelp td.right {
+   color: yellow;
+ }
  .hidden {
    display: none;
    visibility: hidden;
@@ -157,9 +160,9 @@
       }
       if (typeof(value) === 'boolean') {
         if (value === true) {
-          origin.className += ' on';
+          origin.classList.add('on');
         } else {
-          origin.className = origin.className.replace(/(?:^|\s)on(?!\S)/g , '');
+          origin.classList.remove('on');
         }
       }
     });
@@ -182,11 +185,7 @@
   };
 
   function toggleDark() {
-    if (document.body.className.match('dark')) {
-      document.body.className = document.body.className.replace(/(?:^|\s)dark(?!\S)/g , '');
-    } else {
-      document.body.className += ' dark';
-    }
+      document.body.classList.toggle('dark');
   }
 
   var setLeftBrightness = function(value) {
@@ -225,11 +224,7 @@
 
   Mousetrap.bind(['?'], function(e) {
     helpdiv = document.getElementById('shortcuthelp');
-    if (helpdiv.className != 'hidden') {
-        helpdiv.className = 'hidden';
-    } else {
-        helpdiv.className = '';
-    }
+    helpdiv.classList.toggle('hidden');
     return false;
   });
 
@@ -372,9 +367,9 @@
       XHR.get('/rolleicom', {'action': 'queryPCmode'}, function(x, r) {
         var value = r.response[1];
         if (value === true) {
-          pcmode.className = 'on';
+          pcmode.classList.add('on');
         } else {
-          pcmode.className = '';
+          pcmode.classList.remove('on');
         }
         checkConnection();
         pollStatus();
@@ -384,9 +379,9 @@
       XHR.get('/rolleicom', {'action': 'querystopped'}, function(x, r) {
         var value = r.response[1];
         if (value === true) {
-          stopgo.className = 'on';
+          stopgo.classList.add('on');
         } else {
-          stopgo.className = '';
+          stopgo.classList.remove('on');
         }
         initPCmode();
       });
@@ -395,9 +390,9 @@
       XHR.get('/rolleicom', {'action': 'queryAF'}, function(x, r) {
         var value = r.response[1];
         if (value === true) {
-          autofocus.className = 'on';
+          autofocus.classList.add('on');
         } else {
-          autofocus.className = '';
+          autofocus.classList.remove('on');
         }
         initStopped();
       });
@@ -406,9 +401,9 @@
       XHR.get('/rolleicom', {'action': 'querylamps'}, function(x, r) {
         var value = r.response[1];
         if (value === true) {
-          lamps.className = 'big on';
+          lamps.classList.add('on');
         } else {
-          lamps.className = 'big';
+          lamps.classList.remove('on');
         }
         initAF();
       });
