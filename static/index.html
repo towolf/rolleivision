@@ -117,6 +117,7 @@
    background: green;
  }
  #shortcuthelp {
+   font-size: 80%;
    padding: 12px;
    left: 50%;
    top: 50%;
@@ -223,8 +224,7 @@
   };
 
   Mousetrap.bind(['?'], function(e) {
-    helpdiv = document.getElementById('shortcuthelp');
-    helpdiv.classList.toggle('hidden');
+    document.getElementById('shortcuthelp').classList.toggle('hidden');
     return false;
   });
 
@@ -245,6 +245,21 @@
 
   Mousetrap.bind(['e'], function(e) {
     submit({'action': 'end'})
+    return false;
+  });
+
+  Mousetrap.bind(['r'], function(e) {
+    submit({'action': 'reset'})
+    return false;
+  });
+
+  Mousetrap.bind(['p'], function(e) {
+    submit({'action': 'togglePC'}, document.getElementById('pcmode') )
+    return false;
+  });
+
+  Mousetrap.bind(['s'], function(e) {
+    submit({'action': 'togglestop'})
     return false;
   });
 
@@ -363,18 +378,6 @@
     dissolve.addEventListener('change', throttle(function() {
       setDissolveTime(dissolve.value)}, 250), false);
 
-    var initPCmode = function() {
-      XHR.get('/rolleicom', {'action': 'queryPCmode'}, function(x, r) {
-        var value = r.response[1];
-        if (value === true) {
-          pcmode.classList.add('on');
-        } else {
-          pcmode.classList.remove('on');
-        }
-        checkConnection();
-        pollStatus();
-      });
-    };
     var initStopped = function() {
       XHR.get('/rolleicom', {'action': 'querystopped'}, function(x, r) {
         var value = r.response[1];
@@ -383,7 +386,19 @@
         } else {
           stopgo.classList.remove('on');
         }
-        initPCmode();
+        checkConnection();
+        pollStatus();
+      });
+    };
+    var initPCmode = function() {
+      XHR.get('/rolleicom', {'action': 'queryPCmode'}, function(x, r) {
+        var value = r.response[1];
+        if (value === true) {
+          pcmode.classList.add('on');
+        } else {
+          pcmode.classList.remove('on');
+        }
+        initStopped();
       });
     };
     var initAF = function() {
@@ -394,7 +409,7 @@
         } else {
           autofocus.classList.remove('on');
         }
-        initStopped();
+        initPCmode();
       });
     };
     var initLamps = function() {
@@ -630,8 +645,23 @@ KEYBOARD SHORTCUTS
 <td class=left>Focus out</td>
 </tr>
 <tr>
+<td colspan=2><hr></td>
+</tr>
+<tr>
+<td class=right>s</td>
+<td class=left>Stop / Go</td>
+</tr>
+<tr>
+<td class=right>p</td>
+<td class=left>PC mode</td>
+</tr>
+<tr>
 <td class=right>e</td>
 <td class=left>End and rewind</td>
+</tr>
+<tr>
+<td class=right>r</td>
+<td class=left>Reset projector</td>
 </tr>
 </tbody>
 </table>

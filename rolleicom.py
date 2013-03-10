@@ -344,7 +344,7 @@ class RolleiCom():
         return (status[0], self.EMITSRIGHT, status[2])
 
     def dissolvefor(self, duration, wait = False):
-        # set dissolve period in 10th of a second
+        # set dissolve period in 10th of a second for the PC mode functions
         try:
             duration = int(duration)
         except ValueError, v:
@@ -352,6 +352,17 @@ class RolleiCom():
         if not 0 <= duration <= 255:
             raise ValueError('Dissolve duration is a count of 0.1 second between 0 and 999')
         cmd = 'SD:%03d' % duration        # Setze Dissolvezeit
+        return self.submit(cmd, wait)
+
+    def setdissolve(self, duration, wait = False):
+        # set dissolve period in 10th of a second for the manual mode functions
+        try:
+            duration = int(duration)
+        except ValueError, v:
+            return (False, None, 'Invalid duration arg: ' + str(v))
+        if not 0 <= duration <= 255:
+            raise ValueError('Dissolve duration is a count of 0.1 second between 0 and 999')
+        cmd = 'DZ:%03d' % duration        # Dissolvezeit
         return self.submit(cmd, wait)
 
     def loadleft(self, slide, wait = False):
