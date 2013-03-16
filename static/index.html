@@ -17,12 +17,12 @@
     font-size: 70%;
   }
   #error {
-    color: red; 
+    color: red;
     background:  #fbe3e4;
     font-weight: bold;
   }
   .big {
-    font-size: 400%;
+    font-size: 350%;
   }
   .right {
     text-align: right;
@@ -33,7 +33,7 @@
   .centered {
     text-align: center;
   }
-  table { 
+  table {
     margin-left: auto;
     margin-right: auto;
   }
@@ -44,9 +44,6 @@
      */
     vertical-align: middle;
     padding: 0 10px 0 10px;
-  }
-  input[type='range'] {
-    width: 90%;
   }
   output, label {
     vertical-align: middle;
@@ -69,8 +66,8 @@
     border-bottom: none;
     margin: 10px 0 10px 0;
   }
-  button {
-    height: 80px;
+  button, input[type='submit'] {
+    height: 70px;
     width: 100%;
     font-family: monospace;
     display: block;
@@ -93,7 +90,7 @@
     width:16px;
     height:16px;
   }
-  button:hover {
+  button:hover, input[type='submit']:hover {
     color: #336699;
     background: #dff4ff;
     border: 1px solid #c2e1ef;
@@ -113,6 +110,33 @@
    background: #f9e6c8;
    border: 1px solid #e5991f;
  }
+ .bulbglow {
+   display: none;
+ }
+ button.on .bulbglow {
+   display: block;
+ }
+  input[type='range'] {
+    width: 90%;
+  }
+  input[type='number'] {
+    height: 35px;
+    width: 40%;
+    vertical-align: middle;
+    font-family: monospace;
+    font-size: 200%;
+    padding: 0;
+    background: #f5f5f5;
+    border: 1px solid #dedede;
+    border-top: 1px solid #eee;
+    border-left: 1px solid #eee;
+    color: #565656;
+  }
+  input[type='submit'] {
+    display: inline;
+    width: 50%;
+    height: 40px;
+  }
  .green {
    background: green;
  }
@@ -169,6 +193,26 @@
     });
   };
 
+  function formsend(form) {
+    var query = {};
+    for (var n = 0; n < form.elements.length; n++) {
+      var field = form.elements[n];
+      if (!field.hasAttribute("name")
+          || (/^(?:radio|checkbox)$/.test(field.type)
+              && !field.checked)) {
+                continue;
+              }
+      if (field.type === "number" && isNaN(parseFloat(field.value))) {
+        continue;
+      }
+      query[escape(field.getAttribute("name"))] = escape(field.value);
+    }
+    if (Object.keys(query).length > 0) {
+      query['action'] = form.name;
+      submit(query);
+    }
+  }
+
   var throttle = function(func, wait) {
     var timeout;
     return function() {
@@ -189,6 +233,18 @@
       document.body.classList.toggle('dark');
   }
 
+  var toggleLamps = function(origin) {
+    XHR.get('/rolleicom', {'action': 'querylamps'}, function(x, r) {
+      var emitting = r.response[1];
+      if (emitting) {
+        submit({'action': 'lampcontrol', 'wait': true}, origin)
+        origin.classList.remove('on');
+      } else {
+        submit({'action': 'lampcontrol', 'left': 1, 'right': 1}, origin)
+        origin.classList.add('on');
+      }
+    });
+  };
   var setLeftBrightness = function(value) {
     submit({'action': 'brightnessleft', 'brightness': value}, this);
     document.getElementById('bleftvalue').value = ('\xA0\xA0\xA0\xA0\xA0' + (value / 255 * 100).toFixed(1)).slice(-5);
@@ -229,12 +285,12 @@
   });
 
   Mousetrap.bind(['<'], function(e) {
-    submit({'action': 'next'}, document.getElementById('forward')) 
+    submit({'action': 'next'}, document.getElementById('forward'))
     return false;
   });
 
   Mousetrap.bind(['<'], function(e) {
-    submit({'action': 'next'}) 
+    submit({'action': 'next'})
     return false;
   });
 
@@ -365,6 +421,8 @@
   window.onload = function() {
     var bleft = document.getElementById('bleftinput'),
     bright = document.getElementById('brightinput'),
+    lleft = document.getElementById('lleftinput'),
+    lright = document.getElementById('lrightinput'),
     dissolve = document.getElementById('dissolveinput'),
     pcmode = document.getElementById('pcmode'),
     stopgo = document.getElementById('stopgo'),
@@ -433,6 +491,16 @@
         initLamps();
       });
     };
+    var initLoaded = function() {
+      XHR.get('/rolleicom', {'action': 'queryloaded'}, function(x, r) {
+        var success = r.response[0], value = r.response[1], status = r.response[2];
+        if (success) {
+          lleft.value = value[0];
+          lright.value = value[1];
+        }
+        initDissolve();
+      });
+    };
     var initBrightness = function() {
       XHR.get('/rolleicom', {'action': 'querybrightness'}, function(x, r) {
         var success = r.response[0], value = r.response[1], status = r.response[2];
@@ -442,11 +510,24 @@
           document.getElementById('bleftvalue').value = ('\xA0\xA0\xA0\xA0\xA0' + (bleft.value / 255 * 100).toFixed(1)).slice(-5);
           document.getElementById('brightvalue').value = ('\xA0\xA0\xA0\xA0\xA0' + (bright.value / 255 * 100).toFixed(1)).slice(-5);
         }
-        initDissolve();
+        initLoaded();
+      });
+    };
+    var initConnection = function() {
+      XHR.get('/rolleicom', {'action': 'connected'}, function(x, r) {
+        var response = r.response;
+        if (response) {
+          document.getElementById('projector_status_online').style.display = '';
+          document.getElementById('projector_status_offline').style.display = 'none';
+        } else {
+          document.getElementById('projector_status_online').style.display = 'none';
+          document.getElementById('projector_status_offline').style.display = '';
+        }
+        initBrightness();
       });
     };
 
-    initBrightness();
+    initConnection();
   };
 </script>
 <table>
@@ -507,13 +588,67 @@
   </tr>
   <tr>
     <td>
-      <button onclick="submit({'action': 'toggleleftlamp'}, this)" class=big>☀</button>
+      <button onclick="submit({'action': 'toggleleftlamp'}, this)" class=big>
+          <svg xmlns="http://www.w3.org/2000/svg" width=40px height=40px viewBox="0 0 16 19">
+            <g style="fill:#565656">
+            <path d="m8 3c-2.75 0-5 2.25-5 5 0 1.586 0.845 2.9 2 3.81v2.19 1h1 4 1v-1-2.188c1.16-0.91 2-2.224 2-3.81 0-2.75-2.25-5-5-5zm0 2c1.669 0 3 1.331 3 3 0 1.116-0.5951 2.038-1.5 2.562l-0.5 0.32v0.56 1.56h-2v-1.56-0.56l-0.5-0.32c-0.9-0.52-1.5-1.438-1.5-2.558 0-1.668 1.331-3 3-3z"/>
+            <path d="m6 18v1h4v-1h-4z"/>
+            <path d="m5 16v1h6v-1h-6z"/>
+            <path style="opacity:.35" d="m7 8v1h2v-1h-2z"/>
+            </g>
+            <g class=bulbglow>
+            <g style="fill:#ce5c00">
+            <path d="m8 3c-2.75 0-5 2.25-5 5 0 1.586 0.845 2.9 2 3.81v2.19 1h1 4 1v-1-2.188c1.16-0.91 2-2.224 2-3.81 0-2.75-2.25-5-5-5zm0 2c1.669 0 3 1.331 3 3 0 1.116-0.5951 2.038-1.5 2.562l-0.5 0.32v0.56 1.56h-2v-1.56-0.56l-0.5-0.32c-0.9-0.52-1.5-1.438-1.5-2.558 0-1.668 1.331-3 3-3z"/>
+            <path d="m6 18v1h4v-1h-4z"/>
+            <path d="m5 16v1h6v-1h-6z"/>
+            <path style="opacity:.35" d="m7 8v1h2v-1h-2z"/>
+            </g>
+            <g style="fill:#f57900">
+            <rect rx=".5625" ry=".5625" height="2" width="2" y="7.031" x=".006833"/>
+            <rect rx=".5625" ry=".5625" height="2" width="2" y="7.031" x="14.01"/>
+            <rect ry=".5625" rx=".5625" transform="rotate(90)" height="2" width="2" y="-9" x="0"/>
+            <rect ry=".5625" rx=".5625" transform="rotate(135)" height="2" width="2" y="-12" x="-8"/>
+            <rect ry=".5625" rx=".5625" transform="rotate(135)" height="2" width="2" y="-12" x="6"/>
+            <rect ry=".5625" rx=".5625" transform="rotate(135)" height="2" width="2" y="-19" x="-1"/>
+            <rect ry=".5625" rx=".5625" transform="rotate(45)" height="2" width="2" y="-.5996" x="3.724"/>
+            <path style="opacity:.8" d="m7.109 8.217v1h2v-1h-2z"/>
+            </g>
+            </g>
+          </svg>
+      </button>
     </td>
     <td>
-      <button id=lamps onclick="submit({'action': 'lampcontrol', 'left': false, 'right': false}, this)" class=big>☼☼</button>
+      <button id=lamps onclick="toggleLamps(this)" class=big>☀☀</button>
     </td>
     <td>
-      <button onclick="submit({'action': 'togglerightlamp'}, this)" class=big>☀</button>
+      <button onclick="submit({'action': 'togglerightlamp'}, this)" class=big>
+          <svg xmlns="http://www.w3.org/2000/svg" width=40px height=40px viewBox="0 0 16 19">
+            <g style="fill:#565656">
+            <path d="m8 3c-2.75 0-5 2.25-5 5 0 1.586 0.845 2.9 2 3.81v2.19 1h1 4 1v-1-2.188c1.16-0.91 2-2.224 2-3.81 0-2.75-2.25-5-5-5zm0 2c1.669 0 3 1.331 3 3 0 1.116-0.5951 2.038-1.5 2.562l-0.5 0.32v0.56 1.56h-2v-1.56-0.56l-0.5-0.32c-0.9-0.52-1.5-1.438-1.5-2.558 0-1.668 1.331-3 3-3z"/>
+            <path d="m6 18v1h4v-1h-4z"/>
+            <path d="m5 16v1h6v-1h-6z"/>
+            <path style="opacity:.35" d="m7 8v1h2v-1h-2z"/>
+            </g>
+            <g class=bulbglow>
+            <g style="fill:#ce5c00">
+            <path d="m8 3c-2.75 0-5 2.25-5 5 0 1.586 0.845 2.9 2 3.81v2.19 1h1 4 1v-1-2.188c1.16-0.91 2-2.224 2-3.81 0-2.75-2.25-5-5-5zm0 2c1.669 0 3 1.331 3 3 0 1.116-0.5951 2.038-1.5 2.562l-0.5 0.32v0.56 1.56h-2v-1.56-0.56l-0.5-0.32c-0.9-0.52-1.5-1.438-1.5-2.558 0-1.668 1.331-3 3-3z"/>
+            <path d="m6 18v1h4v-1h-4z"/>
+            <path d="m5 16v1h6v-1h-6z"/>
+            <path style="opacity:.35" d="m7 8v1h2v-1h-2z"/>
+            </g>
+            <g style="fill:#f57900">
+            <rect rx=".5625" ry=".5625" height="2" width="2" y="7.031" x=".006833"/>
+            <rect rx=".5625" ry=".5625" height="2" width="2" y="7.031" x="14.01"/>
+            <rect ry=".5625" rx=".5625" transform="rotate(90)" height="2" width="2" y="-9" x="0"/>
+            <rect ry=".5625" rx=".5625" transform="rotate(135)" height="2" width="2" y="-12" x="-8"/>
+            <rect ry=".5625" rx=".5625" transform="rotate(135)" height="2" width="2" y="-12" x="6"/>
+            <rect ry=".5625" rx=".5625" transform="rotate(135)" height="2" width="2" y="-19" x="-1"/>
+            <rect ry=".5625" rx=".5625" transform="rotate(45)" height="2" width="2" y="-.5996" x="3.724"/>
+            <path style="opacity:.8" d="m7.109 8.217v1h2v-1h-2z"/>
+            </g>
+            </g>
+          </svg>
+      </button>
     </td>
   </tr>
   <tr>
@@ -526,6 +661,22 @@
     </td>
     <td>
       <input id=brightinput type=range class=mousetrap min=0 max=255 value=255 step=1 onclick="focus()" />
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <form onsubmit="return formsend(this), false;" action="rolleicom" name=loadleft method="get">
+        <input id=lleftinput type=number name=slide size=2 min=0 max=50>
+        <input type="submit" value="LOAD" />
+      </form>
+    </td>
+    <td>
+    </td>
+    <td>
+      <form onsubmit="return formsend(this), false;" action="rolleicom" name=loadright method="get">
+        <input id=lrightinput type=number name=slide size=2 min=0 max=50>
+        <input type="submit" value="LOAD" />
+      </form>
     </td>
   </tr>
   <tr>

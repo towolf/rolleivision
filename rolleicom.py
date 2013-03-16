@@ -324,7 +324,11 @@ class RolleiCom():
         return (success.count(False) is 0, None, status[2])
 
     def toggleleftlamp(self, wait = False):
-        # toggle autofocus; as autofocus button on IR remote
+        # toggle left lamp on and off; there a state tracking problem here, we
+        # only know if any lkamps are on, not which one
+        emitting = self.querylamps()[1]
+        if not emitting:
+            self.EMITSLEFT = False
         if self.EMITSLEFT:
             status = self.submit('LM:202', wait)
             self.EMITSLEFT = False
@@ -334,7 +338,11 @@ class RolleiCom():
         return (status[0], self.EMITSLEFT, status[2])
 
     def togglerightlamp(self, wait = False):
-        # toggle autofocus; as autofocus button on IR remote
+        # toggle right lamp on and off; there a state tracking problem here, we
+        # only know if any lkamps are on, not which one
+        emitting = self.querylamps()[1]
+        if not emitting:
+            self.EMITSRIGHT = False
         if self.EMITSRIGHT:
             status = self.submit('LM:203', wait)
             self.EMITSRIGHT = False
@@ -367,6 +375,10 @@ class RolleiCom():
 
     def loadleft(self, slide, wait = False):
         # load numbered slide into left condensor system; 0 clears
+        try:
+            slide = int(slide)
+        except ValueError, v:
+            return (False, None, 'Invalid slide arg: ' + str(v))
         if not 0 <= slide <= 255:
             raise ValueError('Slide number is a value between 0 and 255')
         cmd = 'B1:%03d' % slide        # Bild eins
@@ -374,6 +386,10 @@ class RolleiCom():
 
     def loadright(self, slide, wait = False):
         # load numbered slide into right condesor system; 0 clears
+        try:
+            slide = int(slide)
+        except ValueError, v:
+            return (False, None, 'Invalid slide arg: ' + str(v))
         if not 0 <= slide <= 255:
             raise ValueError('Slide number is a value between 0 and 255')
         cmd = 'B2:%03d' % slide        # Bild zwei
@@ -397,9 +413,11 @@ class RolleiCom():
     # Information derived from direct binary memory access
     #
     #  Discovered memory addresses for MSC 300P firmware V4.2
-    #  6223 - brightness: two bytes 0..255
+    #  6181 - last loaded slide left
+    #  6183 - last loaded slide right
     #  6187 - last LM: command, i.e., as int [200..207]
     #  6188 - last set dissolve time
+    #  6223 - last set brightness: two bytes 0..255
     # 16617 - bit 1 bin(1) 0 if AF is on; 1 if AF is off
     # 16617 - bit 2 bin(2) 0 if timer display is off; 1 if timer display is on
     # 16617 - bit 3 bin(4) 0 if dissolve display is off; 1 if dissolve display is on
@@ -470,6 +488,12 @@ class RolleiCom():
     def querylamps(self):
         # Returns True is any lamp is powered; False if all lamps are off
         return (True, not ord(self.readmem(16617, 1)) & 64, '')
+
+    def queryloaded(self):
+        # Returns tuple with slide number loaded last via loadleft and
+        # loadright
+        loaded = self.readmem(6181, 4)
+        return (True, (loaded[0], loaded[2]), '')
 
     def querybrightness(self):
         # Returns tuple with current brightness (0..255, 0..255)
