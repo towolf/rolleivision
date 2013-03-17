@@ -119,9 +119,12 @@
   input[type='range'] {
     width: 90%;
   }
+  form {
+    width: 100%;
+  }
   input[type='number'] {
-    height: 35px;
-    width: 40%;
+    height: 40px;
+    width: 50px;
     vertical-align: middle;
     font-family: monospace;
     font-size: 200%;
@@ -666,7 +669,7 @@
   <tr>
     <td>
       <form onsubmit="return formsend(this), false;" action="rolleicom" name=loadleft method="get">
-        <input id=lleftinput type=number name=slide size=2 min=0 max=50>
+        <input id=lleftinput type=number name=slide min=0 max=50>
         <input type="submit" value="LOAD" />
       </form>
     </td>
@@ -674,7 +677,7 @@
     </td>
     <td>
       <form onsubmit="return formsend(this), false;" action="rolleicom" name=loadright method="get">
-        <input id=lrightinput type=number name=slide size=2 min=0 max=50>
+        <input id=lrightinput type=number name=slide min=0 max=50>
         <input type="submit" value="LOAD" />
       </form>
     </td>

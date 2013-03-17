@@ -6,7 +6,7 @@ import signal
 class RolleiCom():
     def __init__(self, *args, **kwargs):
         #ensure that a reasonable timeout is set
-        timeout = kwargs.get('timeout', 0.05)
+        timeout = kwargs.get('timeout', 0.1)
         if timeout < 0.01: timeout = 0.05
         kwargs['timeout'] = timeout
         self.serial = Serial(*args, **kwargs)
@@ -43,8 +43,8 @@ class RolleiCom():
         status = self.getstatus()
         busy = False
         if getready:
-            busy = status is 'B'
-        processing = status is 'v'
+            busy = status == 'B'
+        processing = status == 'v'
         return processing or busy
 
     def wait(self):
@@ -75,7 +75,8 @@ class RolleiCom():
             print self.CODES['j']
             self.submit(cmd, wait)
         if wait:
-            self.wait()
+            while self.getstatus() != 'R':
+                self.wait()
         return (True, out, self.getstatus(verbose = True))
 
     def readmem(self, start, length, block = 'XData', quiet = True):
