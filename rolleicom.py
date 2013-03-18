@@ -10,9 +10,10 @@ class RolleiCom():
         if timeout < 0.01: timeout = 0.05
         kwargs['timeout'] = timeout
         self.serial = Serial(*args, **kwargs)
-        signal.signal(signal.SIGINT, self.sigint_handler)
+        signal.signal(signal.SIGINT, self._sigint_handler)
         self.EMITSLEFT = False
         self.EMITSRIGHT = False
+        self.RE_CMD = gen_cmd_regex()
         self.CODES = {'v': 'command accepted',
                       'B': 'busy',
                       'R': 'ready',
@@ -27,7 +28,7 @@ class RolleiCom():
                            '\x77': 'A', '\x1F': 'b', '\x4E': 'C', '\x3D': 'd', '\x4F': 'E',
                            '\x47': 'F', '\x67': 'P', '\x00': ' '}
 
-    def getstatus(self, verbose = False):
+    def getstatus(self, verbose=False):
         # the char sent for status report is SMALL SHARP S in DOS codepage cp437
         self.serial.write(chr(225))
         if not verbose:
@@ -38,7 +39,7 @@ class RolleiCom():
     def connected(self):
         return self.getstatus() != ''
 
-    def isbusy(self, getready = True):
+    def isbusy(self, getready=True):
         # queries if status codes indicate projector to be busy
         status = self.getstatus()
         busy = False
@@ -53,7 +54,7 @@ class RolleiCom():
         while self.isbusy():
             continue
 
-    def submit(self, cmd, wait = False, expectoutput = False):
+    def submit(self, cmd, wait=False, expectoutput=False):
         # send ASCII command to projector for execution
         while self.isbusy(getready = False):
             continue
@@ -79,7 +80,7 @@ class RolleiCom():
                 self.wait()
         return (True, out, self.getstatus(verbose = True))
 
-    def readmem(self, start, length, block = 'XData', quiet = True):
+    def readmem(self, start, length, block='XData', quiet=True):
 
         if not quiet:
             import sys
@@ -164,16 +165,16 @@ class RolleiCom():
 
         return outbuf
 
-    def enablePC(self, wait = False):
+    def enablePC(self, wait=False):
         # enables PC mode, disables IR remote
         return self.submit('PE', wait) # PC Modus einschalten
 
-    def disablePC(self, wait = False):
+    def disablePC(self, wait=False):
         # exit PC mode, manual control via IR remote enabled
         # will only accept PE command subsequently
         return self.submit('PA', wait) # PC Modus abschalten
 
-    def togglePC(self, wait = False):
+    def togglePC(self, wait=False):
         # toggle PC mode;
         PCMODE = self.queryPCmode()
         if PCMODE[1]:
@@ -182,36 +183,36 @@ class RolleiCom():
             status = self.enablePC()
         return self.queryPCmode()
 
-    def reset(self, wait = False):
+    def reset(self, wait=False):
         # executes end function on projector and exits PC mode
         self.PCMODE = False
         return self.submit('RS', wait) # Reset
 
-    def next(self, wait = False):
+    def next(self, wait=False):
         # advance and show next slide; as green button
         return self.submit('BV', wait) # Bild vorwaerts
 
-    def previous(self, wait = False):
+    def previous(self, wait=False):
         # reverse and show previous slide; as red button
         return self.submit('BR', wait) # Bild rueckwaerts
 
-    def focusin(self, wait = False):
+    def focusin(self, wait=False):
         # rack focus forward
         return self.submit('FV', wait) # Fokus vorwaerts
 
-    def focusout(self, wait = False):
+    def focusout(self, wait=False):
         # rack focus backward
         return self.submit('FR', wait) # Fokus rueckwaerts
 
-    def enableAF(self, wait = False):
+    def enableAF(self, wait=False):
         # enable autofocus
         return self.submit('AE', wait) # Autofokus einschalten
 
-    def disableAF(self, wait = False):
+    def disableAF(self, wait=False):
         # disable autofocus
         return self.submit('AA', wait) # Autofokus abschalten
 
-    def toggleAF(self, wait = False):
+    def toggleAF(self, wait=False):
         # toggle autofocus; as autofocus button on IR remote
         AF = self.queryAF()
         if AF[1]:
@@ -220,15 +221,15 @@ class RolleiCom():
             status = self.enableAF()
         return self.queryAF()
 
-    def stop(self, wait = False):
+    def stop(self, wait=False):
         # pause projector
         return self.submit('ST', wait) # Stop
 
-    def go(self, wait = False):
+    def go(self, wait=False):
         # resume projector
         return self.submit('WE', wait) # Weiter
 
-    def togglestop(self, wait = False):
+    def togglestop(self, wait=False):
         # stop and go toggle; as STOP/GO button on IR remote
         stopped = self.querystopped()
         if stopped[1]:
@@ -237,19 +238,19 @@ class RolleiCom():
             status = self.stop()
         return self.querystopped()
 
-    def end(self, wait = False):
+    def end(self, wait=False):
         # end projection and rewind magazine; as END button on IR remote
         return self.submit('EN', wait) # Ende
 
-    def currentline(self, wait = False):
+    def currentline(self, wait=False):
         # get current line number in programme
-        return self.submit('AZ', wait, expectoutput = True) # Aktuelle Zeile
+        return self.submit('AZ', wait, expectoutput=True) # Aktuelle Zeile
 
-    def currentslide(self, wait = False):
+    def currentslide(self, wait=False):
         # get number of currently loaded slide
-        return self.submit('AB', wait, expectoutput = True) # Aktuelles Bild
+        return self.submit('AB', wait, expectoutput=True) # Aktuelles Bild
 
-    def readentry(self, line, wait = False):
+    def readentry(self, line, wait=False):
         # read entry by line number from projection programme table
         try:
             line = int(line)
@@ -258,9 +259,9 @@ class RolleiCom():
         if not 0 <= line <= 255:
             raise ValueError('Line no. is a value between 0 and 255')
         cmd = 'LZ:%03d' % line # Lies Zeile
-        return self.submit(cmd, wait, expectoutput = True) # Aktuelle Zeile
+        return self.submit(cmd, wait, expectoutput=True) # Aktuelle Zeile
 
-    def maxbrightness(self, brightness, wait = False):
+    def maxbrightness(self, brightness, wait=False):
         # set maximum brightness level for current slide show [001..255]
         try:
             brightness = int(brightness)
@@ -271,7 +272,7 @@ class RolleiCom():
         cmd = 'SL:%03d' % brightness   # Setze Luminanz
         return self.submit(cmd, wait)
 
-    def brightnessleft(self, brightness, wait = False):
+    def brightnessleft(self, brightness, wait=False):
         # set brightness in left condensor system [001..255]
         # requires dis- and re-enabling of the condensor lamp to become active
         try:
@@ -283,7 +284,7 @@ class RolleiCom():
         cmd = 'LD1:%03d' % brightness   # Setze Luminanz
         return self.submit(cmd, wait)
 
-    def brightnessright(self, brightness, wait = False):
+    def brightnessright(self, brightness, wait=False):
         # set brightness in right condensor system [001..255]
         # requires dis- and re-enabling of the condensor lamp to become active
         try:
@@ -295,22 +296,21 @@ class RolleiCom():
         cmd = 'LD2:%03d' % brightness   # Setze Luminanz
         return self.submit(cmd, wait)
 
-    def lampcontrol(self, left = False, right = False, fade = False, wait = False):
+    def lampcontrol(self, left=False, right=False, fade=False, wait=False):
         # switch lamps on or of with optional fade
         # `left`: bool
         # `right`: bool
         # `fade`: bool
         # set left or right to True or False to feed power to the respective lamps
         # the fade argument trigges a dissolve
-
-        if left == right == False:
+        if not left and not right:
             cmd = (7,)
-        elif left == False:
+        elif not left:
             if fade:
                 cmd = (4,)
             else:
                 cmd = (1, 2)
-        elif right == False:
+        elif not right:
             if fade:
                 cmd = (5,)
             else:
@@ -324,9 +324,9 @@ class RolleiCom():
             success.append(status[0])
         return (success.count(False) is 0, None, status[2])
 
-    def toggleleftlamp(self, wait = False):
+    def toggleleftlamp(self, wait=False):
         # toggle left lamp on and off; there a state tracking problem here, we
-        # only know if any lkamps are on, not which one
+        # only know if any lamps are on, not which one
         emitting = self.querylamps()[1]
         if not emitting:
             self.EMITSLEFT = False
@@ -338,9 +338,9 @@ class RolleiCom():
             self.EMITSLEFT = True
         return (status[0], self.EMITSLEFT, status[2])
 
-    def togglerightlamp(self, wait = False):
+    def togglerightlamp(self, wait=False):
         # toggle right lamp on and off; there a state tracking problem here, we
-        # only know if any lkamps are on, not which one
+        # only know if any lamps are on, not which one
         emitting = self.querylamps()[1]
         if not emitting:
             self.EMITSRIGHT = False
@@ -352,7 +352,7 @@ class RolleiCom():
             self.EMITSRIGHT = True
         return (status[0], self.EMITSRIGHT, status[2])
 
-    def dissolvefor(self, duration, wait = False):
+    def dissolvefor(self, duration, wait=False):
         # set dissolve period in 10th of a second for the PC mode functions
         try:
             duration = int(duration)
@@ -363,7 +363,7 @@ class RolleiCom():
         cmd = 'SD:%03d' % duration        # Setze Dissolvezeit
         return self.submit(cmd, wait)
 
-    def setdissolve(self, duration, wait = False):
+    def setdissolve(self, duration, wait=False):
         # set dissolve period in 10th of a second for the manual mode functions
         try:
             duration = int(duration)
@@ -374,7 +374,7 @@ class RolleiCom():
         cmd = 'DZ:%03d' % duration        # Dissolvezeit
         return self.submit(cmd, wait)
 
-    def loadleft(self, slide, wait = False):
+    def loadleft(self, slide, wait=False):
         # load numbered slide into left condensor system; 0 clears
         try:
             slide = int(slide)
@@ -385,7 +385,7 @@ class RolleiCom():
         cmd = 'B1:%03d' % slide        # Bild eins
         return self.submit(cmd, wait)
 
-    def loadright(self, slide, wait = False):
+    def loadright(self, slide, wait=False):
         # load numbered slide into right condesor system; 0 clears
         try:
             slide = int(slide)
@@ -396,14 +396,14 @@ class RolleiCom():
         cmd = 'B2:%03d' % slide        # Bild zwei
         return self.submit(cmd, wait)
 
-    def gotoline(self, line, wait = False):
+    def gotoline(self, line, wait=False):
         # Go to line in programme table and commence show
         if not 0 <= line <= 999:
             raise ValueError('Slide number is a value between 0 and 999')
         cmd = 'GZ:%03d' % line        # Gehe zu Zeile
         return self.submit(cmd, wait)
 
-    def gotoslide(self, slide, wait = False):
+    def gotoslide(self, slide, wait=False):
         # In Test mode: Commence show at first programme line containing slide
         # In Manual mode: Go to first programme line containing slide
         if not 0 <= slide <= 50:
@@ -515,7 +515,29 @@ class RolleiCom():
                 digits.append(self.SEGMENTMAP[chr(byte)])
         return (True, ''.join(reversed(digits)), '')
 
-    def sigint_handler(self, signal, frame):
+    # Batch command processing
+    def runbatch(self, script):
+        import time
+        batch = [line.split('#')[0].strip() for line in script.splitlines()]
+        valid = [self.RE_CMD.match(cmd) is not None for cmd in batch]
+        if not all(valid):
+            raise ValueError('Script contains invalid lines')
+        for index, line in enumerate(batch):
+            if not line or line.endswith(':'):
+                pass
+            elif line.startswith('SLEEP'):
+                sleepfor = float(line.split()[1])
+                time.sleep(sleepfor)
+            elif line.startswith('GOTO'):
+                label = line.split()[1]
+                goto = batch.index(label + ':')
+                return self.runbatch('\n'.join(batch[goto:])) # TODO: ugly
+            else:
+                self.submit(line, wait=True)
+            print "ran", index, line
+        return (True, index, 'ran {} lines'.format(index))
+
+    def _sigint_handler(self, signal, frame):
         print '\n\nYou pressed Ctrl+C!\n\n'
         self.serial.flushOutput()
         if self.serial.inWaiting() > 0:
@@ -527,3 +549,43 @@ class RolleiCom():
         else:
             self.serial.readall()
 
+def gen_cmd_regex():
+    import re
+    cmds = []
+    cmds.append('\s*')
+    cmds.append('SLEEP \d+(\.\d*)?')
+    cmds.append('GOTO [A-Z]+')
+    cmds.append('[A-Z]{4,}:')
+    simple =  ['PE', 'PA', 'RS', 'BV', 'BR', 'FV', 'FR', 'AE', 'AA', 'ST', 'WE', 'EN', 'AZ',
+     'AB', 'MOM', 'MOT', 'MO', 'ML', 'MS']
+    arg255 = ['DZ', 'SL', 'B1', 'B2', 'LD1', 'LD2', 'SD', 'BN', 'DI', 'GB']
+    arg999 = ['SZ', 'BN', 'LZ', 'GZ']
+    cmds.append('|'.join(simple))
+    cmds.append('(' + '|'.join(arg255) + r'):[0-2]\d{2}')
+    cmds.append('(' + '|'.join(arg999) + r'):\d{3}')
+    cmds.append(r'SU:.[1-4][1-4]')
+    cmds.append(r'LM:20[0-7]')
+    cmds.append(r'TI:d{4}')
+    cmds.append(r'SF:[0-4][0-7][0-9]')
+    return re.compile('(' + r'|'.join(cmds) + ')(#.*)?$', re.MULTILINE)
+
+def compare(lst):
+      return lst[1:] == lst[:-1]
+
+def comparebytearrays(*args):
+    import sys
+    for i in xrange(len(args[0])):
+        items = [array[i] for array in args]
+        if not compare(items):
+
+            sys.stdout.write('%08d: ' % i)
+            for byte in items:
+                sys.stdout.write('%02x ' % byte)
+
+            sys.stdout.write('    ')
+
+            for byte in items:
+                sys.stdout.write('%s ' % chr(byte).decode('cp437'))
+
+            sys.stdout.write('\n')
+            sys.stdout.flush()
