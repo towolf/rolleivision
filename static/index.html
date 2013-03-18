@@ -372,34 +372,46 @@
 
   Mousetrap.bind(['1'], function(e) {
     submit({'action': 'submit', 'cmd': 'LM:200'});
+    document.getElementById('leftlamp').classList.add('on');
   });
 
   Mousetrap.bind(['2'], function(e) {
     submit({'action': 'submit', 'cmd': 'LM:201'});
+    document.getElementById('rightlamp').classList.add('on');
   });
 
   Mousetrap.bind(['3'], function(e) {
     submit({'action': 'submit', 'cmd': 'LM:202'});
+    document.getElementById('leftlamp').classList.remove('on');
   });
 
   Mousetrap.bind(['4'], function(e) {
     submit({'action': 'submit', 'cmd': 'LM:203'});
+    document.getElementById('rightlamp').classList.remove('on');
   });
 
   Mousetrap.bind(['5'], function(e) {
     submit({'action': 'submit', 'cmd': 'LM:204'});
+    document.getElementById('leftlamp').classList.add('on');
+    document.getElementById('rightlamp').classList.remove('on');
   });
 
   Mousetrap.bind(['6'], function(e) {
     submit({'action': 'submit', 'cmd': 'LM:205'});
+    document.getElementById('rightlamp').classList.add('on');
+    document.getElementById('leftlamp').classList.remove('on');
   });
 
   Mousetrap.bind(['7'], function(e) {
     submit({'action': 'submit', 'cmd': 'LM:206'});
+    document.getElementById('leftlamp').classList.add('on');
+    document.getElementById('rightlamp').classList.add('on');
   });
 
   Mousetrap.bind(['8'], function(e) {
     submit({'action': 'submit', 'cmd': 'LM:207'});
+    document.getElementById('leftlamp').classList.remove('on');
+    document.getElementById('rightlamp').classList.remove('on');
   });
 
   // Suspend XHR requests when tab is not visible
@@ -592,7 +604,7 @@
   </tr>
   <tr>
     <td>
-      <button onclick="submit({'action': 'toggleleftlamp'}, this)" class=big>
+      <button id=leftlamp onclick="submit({'action': 'toggleleftlamp'}, this)" class=big>
           <svg xmlns="http://www.w3.org/2000/svg" width=40px height=40px viewBox="0 0 16 19">
             <g style="fill:#565656">
             <path d="m8 3c-2.75 0-5 2.25-5 5 0 1.586 0.845 2.9 2 3.81v2.19 1h1 4 1v-1-2.188c1.16-0.91 2-2.224 2-3.81 0-2.75-2.25-5-5-5zm0 2c1.669 0 3 1.331 3 3 0 1.116-0.5951 2.038-1.5 2.562l-0.5 0.32v0.56 1.56h-2v-1.56-0.56l-0.5-0.32c-0.9-0.52-1.5-1.438-1.5-2.558 0-1.668 1.331-3 3-3z"/>
@@ -625,7 +637,7 @@
       <button id=lamps onclick="toggleLamps(this)" class=big>☀☀</button>
     </td>
     <td>
-      <button onclick="submit({'action': 'togglerightlamp'}, this)" class=big>
+      <button id=rightlamp onclick="submit({'action': 'togglerightlamp'}, this)" class=big>
           <svg xmlns="http://www.w3.org/2000/svg" width=40px height=40px viewBox="0 0 16 19">
             <g style="fill:#565656">
             <path d="m8 3c-2.75 0-5 2.25-5 5 0 1.586 0.845 2.9 2 3.81v2.19 1h1 4 1v-1-2.188c1.16-0.91 2-2.224 2-3.81 0-2.75-2.25-5-5-5zm0 2c1.669 0 3 1.331 3 3 0 1.116-0.5951 2.038-1.5 2.562l-0.5 0.32v0.56 1.56h-2v-1.56-0.56l-0.5-0.32c-0.9-0.52-1.5-1.438-1.5-2.558 0-1.668 1.331-3 3-3z"/>
