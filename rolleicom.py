@@ -3,11 +3,13 @@
 from serial import Serial
 import signal
 
+
 class RolleiCom():
     def __init__(self, *args, **kwargs):
         #ensure that a reasonable timeout is set
         timeout = kwargs.get('timeout', 0.1)
-        if timeout < 0.01: timeout = 0.05
+        if timeout < 0.01:
+            timeout = 0.05
         kwargs['timeout'] = timeout
         self.serial = Serial(*args, **kwargs)
         signal.signal(signal.SIGINT, self._sigint_handler)
@@ -23,13 +25,15 @@ class RolleiCom():
                       'p': 'bad parameter',
                       'j': 'cmd processing',
                       '?': '<not implemented>'}
-        self.SEGMENTMAP = {'\x7E': '0', '\x30': '1', '\x6D': '2', '\x79': '3', '\x33': '4',
-                           '\x5B': '5', '\x5F': '6', '\x70': '7', '\x7F': '8', '\x7B': '9',
-                           '\x77': 'A', '\x1F': 'b', '\x4E': 'C', '\x3D': 'd', '\x4F': 'E',
-                           '\x47': 'F', '\x67': 'P', '\x00': ' '}
+        self.SEGMENTMAP = {'\x7E': '0', '\x30': '1', '\x6D': '2', '\x79': '3',
+                           '\x33': '4', '\x5B': '5', '\x5F': '6', '\x70': '7',
+                           '\x7F': '8', '\x7B': '9', '\x77': 'A', '\x1F': 'b',
+                           '\x4E': 'C', '\x3D': 'd', '\x4F': 'E', '\x47': 'F',
+                           '\x67': 'P', '\x00': ' '}
 
     def getstatus(self, verbose=False):
-        # the char sent for status report is SMALL SHARP S in DOS codepage cp437
+        # the char sent for status report is SMALL SHARP S in DOS codepage
+        # cp437
         self.serial.write(chr(225))
         if not verbose:
             return self.serial.read()
@@ -56,7 +60,7 @@ class RolleiCom():
 
     def submit(self, cmd, wait=False, expectoutput=False):
         # send ASCII command to projector for execution
-        while self.isbusy(getready = False):
+        while self.isbusy(getready=False):
             continue
         for char in cmd + '\r':
             self.serial.write(char)
@@ -66,7 +70,9 @@ class RolleiCom():
                     return (False, None, 'Projector not online')
                 else:
                     self.serial.read(self.serial.inWaiting())
-                    return (False, None, 'Projector echoed %s (%d) instead of %s (%d)' % (ret, ord(ret), char, ord(char)))
+                    return (False, None,
+                            'Projector echoed %s (%d) instead of %s (%d)'
+                            % (ret, ord(ret), char, ord(char)))
         if expectoutput:
             out = self.serial.readline().strip()
         else:
@@ -78,7 +84,7 @@ class RolleiCom():
         if wait:
             while self.getstatus() != 'R':
                 self.wait()
-        return (True, out, self.getstatus(verbose = True))
+        return (True, out, self.getstatus(verbose=True))
 
     def readmem(self, start, length, block='XData', quiet=True):
 
@@ -86,7 +92,7 @@ class RolleiCom():
             import sys
 
         if not 0 <= start <= 2**16-1:
-            raise ValueError('Start read address is a value between 0 and 2**16-1 (0x00x00 to 0xff0xff)')
+            raise ValueError('Start address is a value between 0 and 2**16-1 (0x0000 to 0xffff)')
 
         if not 1 <= length <= 2**16-1:
             raise ValueError('Length is a value between 1 and 2**16-1 (0x00x01 to 0xff0xff)')
@@ -167,12 +173,12 @@ class RolleiCom():
 
     def enablePC(self, wait=False):
         # enables PC mode, disables IR remote
-        return self.submit('PE', wait) # PC Modus einschalten
+        return self.submit('PE', wait)  # PC Modus einschalten
 
     def disablePC(self, wait=False):
         # exit PC mode, manual control via IR remote enabled
         # will only accept PE command subsequently
-        return self.submit('PA', wait) # PC Modus abschalten
+        return self.submit('PA', wait)  # PC Modus abschalten
 
     def togglePC(self, wait=False):
         # toggle PC mode;
@@ -186,31 +192,31 @@ class RolleiCom():
     def reset(self, wait=False):
         # executes end function on projector and exits PC mode
         self.PCMODE = False
-        return self.submit('RS', wait) # Reset
+        return self.submit('RS', wait)  # Reset
 
     def next(self, wait=False):
         # advance and show next slide; as green button
-        return self.submit('BV', wait) # Bild vorwaerts
+        return self.submit('BV', wait)  # Bild vorwaerts
 
     def previous(self, wait=False):
         # reverse and show previous slide; as red button
-        return self.submit('BR', wait) # Bild rueckwaerts
+        return self.submit('BR', wait)  # Bild rueckwaerts
 
     def focusin(self, wait=False):
         # rack focus forward
-        return self.submit('FV', wait) # Fokus vorwaerts
+        return self.submit('FV', wait)  # Fokus vorwaerts
 
     def focusout(self, wait=False):
         # rack focus backward
-        return self.submit('FR', wait) # Fokus rueckwaerts
+        return self.submit('FR', wait)  # Fokus rueckwaerts
 
     def enableAF(self, wait=False):
         # enable autofocus
-        return self.submit('AE', wait) # Autofokus einschalten
+        return self.submit('AE', wait)  # Autofokus einschalten
 
     def disableAF(self, wait=False):
         # disable autofocus
-        return self.submit('AA', wait) # Autofokus abschalten
+        return self.submit('AA', wait)  # Autofokus abschalten
 
     def toggleAF(self, wait=False):
         # toggle autofocus; as autofocus button on IR remote
@@ -223,11 +229,11 @@ class RolleiCom():
 
     def stop(self, wait=False):
         # pause projector
-        return self.submit('ST', wait) # Stop
+        return self.submit('ST', wait)  # Stop
 
     def go(self, wait=False):
         # resume projector
-        return self.submit('WE', wait) # Weiter
+        return self.submit('WE', wait)  # Weiter
 
     def togglestop(self, wait=False):
         # stop and go toggle; as STOP/GO button on IR remote
@@ -240,15 +246,15 @@ class RolleiCom():
 
     def end(self, wait=False):
         # end projection and rewind magazine; as END button on IR remote
-        return self.submit('EN', wait) # Ende
+        return self.submit('EN', wait)  # Ende
 
     def currentline(self, wait=False):
         # get current line number in programme
-        return self.submit('AZ', wait, expectoutput=True) # Aktuelle Zeile
+        return self.submit('AZ', wait, expectoutput=True)  # Aktuelle Zeile
 
     def currentslide(self, wait=False):
         # get number of currently loaded slide
-        return self.submit('AB', wait, expectoutput=True) # Aktuelles Bild
+        return self.submit('AB', wait, expectoutput=True)  # Aktuelles Bild
 
     def readentry(self, line, wait=False):
         # read entry by line number from projection programme table
@@ -258,8 +264,8 @@ class RolleiCom():
             return (False, None, 'Invalid line arg: ' + str(v))
         if not 0 <= line <= 255:
             raise ValueError('Line no. is a value between 0 and 255')
-        cmd = 'LZ:%03d' % line # Lies Zeile
-        return self.submit(cmd, wait, expectoutput=True) # Aktuelle Zeile
+        cmd = 'LZ:%03d' % line  # Lies Zeile
+        return self.submit(cmd, wait, expectoutput=True)  # Aktuelle Zeile
 
     def maxbrightness(self, brightness, wait=False):
         # set maximum brightness level for current slide show [001..255]
@@ -301,8 +307,8 @@ class RolleiCom():
         # `left`: bool
         # `right`: bool
         # `fade`: bool
-        # set left or right to True or False to feed power to the respective lamps
-        # the fade argument trigges a dissolve
+        # set left or right to True or False to feed power to the respective
+        # lamps the fade argument trigges a dissolve
         if not left and not right:
             cmd = (7,)
         elif not left:
@@ -467,9 +473,9 @@ class RolleiCom():
     def firmwarerevision(self):
         # Returns string of firmware version
         memorypointer = 0xa0 + 42  # pointer table address plus offset 42
-        address = int(str(self.readmem(memorypointer, 2, block = "Code")).encode('hex'), 16)
-        length = int(str(self.readmem(memorypointer + 2, 2, block = "Code")).encode('hex'), 16)
-        revision = str(self.readmem(address, length, block = "Code")).rstrip('\x00')
+        address = int(str(self.readmem(memorypointer, 2, block='Code')).encode('hex'), 16)
+        length = int(str(self.readmem(memorypointer + 2, 2, block='Code')).encode('hex'), 16)
+        revision = str(self.readmem(address, length, block='Code')).rstrip('\x00')
         return revision
 
     def queryPCmode(self):
@@ -531,7 +537,7 @@ class RolleiCom():
             elif line.startswith('GOTO'):
                 label = line.split()[1]
                 goto = batch.index(label + ':')
-                return self.runbatch('\n'.join(batch[goto:])) # TODO: ugly
+                return self.runbatch('\n'.join(batch[goto:]))  # TODO: ugly
             else:
                 self.submit(line, wait=True)
             print "ran", index, line
@@ -549,6 +555,7 @@ class RolleiCom():
         else:
             self.serial.readall()
 
+
 def gen_cmd_regex():
     import re
     cmds = []
@@ -556,8 +563,8 @@ def gen_cmd_regex():
     cmds.append('SLEEP \d+(\.\d*)?')
     cmds.append('GOTO [A-Z]+')
     cmds.append('[A-Z]{4,}:')
-    simple =  ['PE', 'PA', 'RS', 'BV', 'BR', 'FV', 'FR', 'AE', 'AA', 'ST', 'WE', 'EN', 'AZ',
-     'AB', 'MOM', 'MOT', 'MO', 'ML', 'MS']
+    simple = ['PE', 'PA', 'RS', 'BV', 'BR', 'FV', 'FR', 'AE', 'AA', 'ST', 'WE',
+              'EN', 'AZ', 'AB', 'MOM', 'MOT', 'MO', 'ML', 'MS']
     arg255 = ['DZ', 'SL', 'B1', 'B2', 'LD1', 'LD2', 'SD', 'BN', 'DI', 'GB']
     arg999 = ['SZ', 'BN', 'LZ', 'GZ']
     cmds.append('|'.join(simple))
@@ -569,8 +576,10 @@ def gen_cmd_regex():
     cmds.append(r'SF:[0-4][0-7][0-9]')
     return re.compile('(' + r'|'.join(cmds) + ')(#.*)?$', re.MULTILINE)
 
+
 def compare(lst):
-      return lst[1:] == lst[:-1]
+    return lst[1:] == lst[:-1]
+
 
 def comparebytearrays(*args):
     import sys
