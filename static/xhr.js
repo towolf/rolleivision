@@ -169,6 +169,11 @@ XHR.get = function(url, data, callback)
 	(new XHR()).get(url, data, callback);
 }
 
+XHR.post = function(url, data, callback)
+{
+	(new XHR()).post(url, data, callback);
+}
+
 XHR.poll = function(interval, url, data, callback)
 {
 	if (isNaN(interval) || interval < 1)

@@ -34,9 +34,11 @@ class rolleicom:
                 return json.dumps({'response': response, "action": action, "input": input})
             return json.dumps({'response': response, "action": action, "input": input})
 
-    def POST(self, name):
+    def POST(self):
         data = web.data()
-        return {'message': "POST OK! %s" % data}
+        response = r.runbatch(data)
+        web.header('Content-Type', 'application/json')
+        return json.dumps({'response': response})
 
 # For serving using any wsgi server
 wsgi_app = web.application(urls, globals()).wsgifunc()

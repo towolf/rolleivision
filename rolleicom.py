@@ -521,7 +521,14 @@ class RolleiCom():
         batch = [line.split('#')[0].strip() for line in script.splitlines()]
         valid = [self.RE_CMD.match(cmd) is not None for cmd in batch]
         if not all(valid):
-            raise ValueError('Script contains invalid lines')
+            def validate(batch, errors):
+                for line, valid in zip(batch, errors):
+                    if valid:
+                        yield line
+                    else:
+                        yield '<strong>' + line + '</strong>'
+            markup = '\n'.join(validate(batch, valid))
+            return (False, markup, 'Batch contains errors')
         for index, line in enumerate(batch):
             if not line or line.endswith(':'):
                 pass
