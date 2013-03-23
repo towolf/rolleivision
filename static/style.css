@@ -1,0 +1,185 @@
+body {
+  font-family: monospace;
+  background: white;
+  color: #565656;
+}
+.dark {
+  background: black;
+  -webkit-filter: invert(1) hue-rotate(160deg) saturate(1.2) brightness(1.1);
+}
+#error, #res {
+  font-size: 70%;
+}
+#error {
+  color: red;
+  background:  #fbe3e4;
+  font-weight: bold;
+}
+.big {
+  font-size: 350%;
+}
+.right {
+  text-align: right;
+}
+.left {
+  text-align: left;
+}
+.centered {
+  text-align: center;
+}
+table {
+  margin-left: auto;
+  margin-right: auto;
+}
+td {
+  text-align: center;
+  /* baseline, sub, super, top, text-top, middle,
+   * bottom, text-bottom, length, or a value in percentage
+   */
+  vertical-align: middle;
+  padding: 0 10px 0 10px;
+}
+output, label {
+  vertical-align: middle;
+  width: 25%;
+}
+#xhr_poll_status, #projector_status {
+  font-size: 75%;
+  cursor: pointer;
+}
+#xhr_poll_status #xhr_poll_status_off, #projector_status_offline {
+  font-weight: bold;
+  color: #FF0000;
+}
+#xhr_poll_status #xhr_poll_status_on, #projector_status_online {
+  font-weight: bold;
+  color: #00FF00;
+}
+hr {
+  border: 1px solid #dedede;
+  border-bottom: none;
+  margin: 10px 0 10px 0;
+}
+button, input[type='submit'] {
+  height: 70px;
+  width: 100%;
+  font-family: monospace;
+  display: block;
+  padding: 0;
+  background: #f5f5f5;
+  border: 1px solid #dedede;
+  border-top: 1px solid #eee;
+  border-left: 1px solid #eee;
+  color: #565656;
+  /*
+   * transition: background .25s ease-in-out;
+   * -moz-transition: background .25s ease-in-out;
+   * -webkit-transition: background .25s ease-in-out;
+   */
+}
+button img {
+  margin:0 3px -3px 0 !important;
+  padding:0;
+  border:none;
+  width:16px;
+  height:16px;
+}
+button:hover, input[type='submit']:hover {
+  color: #336699;
+  background: #dff4ff;
+  border: 1px solid #c2e1ef;
+}
+button.positive:hover {
+  color: #529214;
+  background: #E6EFC2;
+  border: 1px solid #C6D880;
+}
+button.on, button.on:hover {
+  color: #d12f19;
+  background: #fbe3e4;
+  border: 1px solid #fbc2c4;
+}
+button.big.on, button.big.on:hover {
+  color: #bb7c16;
+  background: #f9e6c8;
+  border: 1px solid #e5991f;
+}
+.bulbglow {
+  display: none;
+}
+button.on .bulbglow {
+  display: block;
+}
+input[type='range'] {
+  width: 90%;
+}
+button, input, select {
+  -webkit-box-shadow: 1px 1px 1px #eee;
+  -webkit-border-radius: 3px;
+}
+input[type='number'] {
+  height: 38px;
+  width: 50px;
+  vertical-align: middle;
+  font-family: monospace;
+  font-size: 200%;
+  padding-left: 5px;
+  background: #f5f5f5;
+  border: 1px solid #fff;
+  color: #565656;
+  -webkit-box-shadow:inset 2px 2px 6px #aaa;
+  -webkit-border-radius: 6px;
+}
+.editable {
+  width: 15em;
+  height: 15em;
+  overflow: auto;
+  font-family: monospace;
+  font-size: 100%;
+  padding-left: 5px;
+  background: #f5f5f5;
+  border: 1px solid #fff;
+  color: #565656;
+  display: block;
+  -webkit-box-shadow:inset 2px 2px 6px #aaa;
+  -webkit-border-radius: 6px;
+}
+.editable strong {
+  color: white;
+  background: crimson;
+}
+.invalid {
+  background: #fbe3e4;
+}
+input[type='submit'] {
+  display: inline;
+  width: 40%;
+  height: 40px;
+}
+.green {
+  background: green;
+}
+#shortcuthelp {
+  font-size: 80%;
+  padding: 12px;
+  left: 50%;
+  top: 50%;
+  margin: -350px 0 0 -150px;
+  width: 300px;
+  z-index: 1002;
+  color: #FFF;
+  position: fixed;
+  text-align: center;
+  font-weight: bold;
+  background: #222 none repeat scroll 0;
+  overflow: hidden;
+  opacity: .85;
+  border-radius: 10px;
+}
+#shortcuthelp td.right {
+  color: yellow;
+}
+.hidden {
+  display: none;
+  visibility: hidden;
+}

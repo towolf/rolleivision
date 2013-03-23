@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<title>Batch processor</title>
+<meta charset="utf-8" />
+<script src=/static/xhr.js></script>
+<link rel=stylesheet href=/static/style.css>
+<script>
+  function _sendText() {
+    var script = document.getElementById('batchentry').innerText;
+    XHR.post('/rolleicom', script, function(x, r) {console.log(this.responseText)});
+    return false;
+  }
+  function sendText() {
+    var batchentry = document.getElementById('batchentry');
+    var script = batchentry.innerText;
+
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', '/rolleicom', true);
+    xhr.setRequestHeader('Content-type', 'text/plain');
+    xhr.onload = function(e) {
+      if (this.status == 200) {
+        var json = eval('(' + this.responseText + ')');
+        var success = json.response[0],
+            value = json.response[1],
+            status = json.response[2];
+        console.log(status);
+        batchentry.innerHTML = value;
+        (success) 
+          ? batchentry.classList.remove('invalid') 
+          : batchentry.classList.add('invalid');
+      }
+    };
+
+    xhr.send(script);
+    return false;
+  }
+</script>
+<pre class=editable id=batchentry contenteditable="true">
+LOOP:
+LD1:255
+LM:200
+ST
+LM:202
+LD1:100
+aslkjdak dsjal ksdslk jaslkd
+asjkd las jdalksd 
+alks djal
+ST
+lkjasd öjlaksd jölk
+LM:200 
+SLEEP 5
+LM:202
+ST
+GOTO LOOP
+</pre>
+<input type=button onclick=sendText() value="Run Batch!"/>
