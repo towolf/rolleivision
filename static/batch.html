@@ -43,7 +43,7 @@
     xhr.send(script);
     return false;
   };
-  function reset() {
+  function resetBatch() {
     XHR.get('/rolleicom', {'action': 'getbatch', 'default': 1}, function(x, r) {
       document.getElementById('batchentry').innerHTML = r.response[1];
     });
@@ -56,6 +56,12 @@ window.onload = function() {
   })()
 };
 </script>
+<style>
+body {
+background: black;
+margin: 0;
+}
+</style>
 <pre class=editable id=batchentry contenteditable="true"></pre>
 <input type=button class=batch id=runbatch onclick=sendText() value="Run Batch!"/>
-<input type=button class=batch id=reset onclick=reset() value="Reset"/>
+<input type=button class=batch id=resetbatch onclick=reset() value="Reset"/>

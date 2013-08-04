@@ -90,6 +90,52 @@ var setDissolveTime = function(value) {
   document.getElementById('dissolvevalue').value = ('\xA0\xA0\xA0' + (value / 10).toFixed(1)).slice(-5) + ' Sek.';
 };
 
+function sendBatch() {
+    var batchentry = document.getElementById('batchentry');
+    var runbatch = document.getElementById('runbatch');
+    var resetbatch = document.getElementById('resetbatch');
+    var closebatch = document.getElementById('closebatch');
+    var script = batchentry.innerText;
+    batchentry.innerHTML = '<span style="color:crimson;font-weight:bold;">Batch in progress ...</span>';
+    batchentry.classList.add('invalid');
+    runbatch.disabled = true;
+    resetbatch.disabled = true;
+    closebatch.disabled = true;
+
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', '/rolleicom', true);
+    xhr.setRequestHeader('Content-type', 'text/plain');
+    xhr.onload = function(e) {
+        if (this.status == 200) {
+            var json = eval('(' + this.responseText + ')');
+            var success = json.response[0],
+            value = json.response[1],
+            status = json.response[2];
+            console.log(status);
+            batchentry.innerHTML = value;
+            runbatch.disabled = false;
+            resetbatch.disabled = false;
+            closebatch.disabled = false;
+            (success) 
+                ? batchentry.classList.remove('invalid') 
+                : batchentry.classList.add('invalid');
+        }
+    };
+
+    xhr.send(script);
+    return false;
+};
+
+var resetBatch = function() {
+    XHR.get('/rolleicom', {'action': 'getbatch', 'default': 1}, function(x, r) {
+        document.getElementById('batchentry').innerHTML = r.response[1];
+    });
+};
+
+var closeBatch = function() {
+  document.getElementById('batchpopup').classList.add('hidden');
+};
+
 var checkConnection = function() {
   XHR.poll(5, '/rolleicom', {'action': 'connected'}, function(x, r) {
     var response = r.response;
@@ -146,6 +192,11 @@ Mousetrap.bind(['p'], function(e) {
 
 Mousetrap.bind(['s'], function(e) {
   submit({'action': 'togglestop'})
+  return false;
+});
+
+Mousetrap.bind(['b'], function(e) {
+  document.getElementById('batchpopup').classList.toggle('hidden');
   return false;
 });
 
@@ -278,6 +329,12 @@ window.onload = function() {
   dissolve.addEventListener('change', throttle(function() {
     setDissolveTime(dissolve.value)}, 250), false);
 
+  var initBatch = function() {
+    XHR.get('/rolleicom', {'action': 'getbatch'}, function(x, r) {
+      document.getElementById('batchentry').innerHTML = r.response[1];
+    });
+  };
+  initBatch();
   var initStopped = function() {
     XHR.get('/rolleicom', {'action': 'querystopped'}, function(x, r) {
       var value = r.response[1];
@@ -288,6 +345,7 @@ window.onload = function() {
       }
       //checkConnection();
       //pollStatus();
+      initBatch();
     });
   };
   var initPCmode = function() {

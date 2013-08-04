@@ -2,6 +2,8 @@
 <title>RolleiVision MSC Remote</title>
 <meta charset=utf-8>
 <meta name=viewport content="width=device-width, initial-scale=0.7, user-scalable=0">
+<meta name=apple-mobile-web-app-capable content=yes>
+<meta name=apple-mobile-web-app-status-bar-style content=black>
 <link href=/static/favicon.ico rel=icon type=image/x-icon>
 <link rel=stylesheet href=/static/style.css>
 
@@ -149,6 +151,7 @@
       </form>
     </td>
     <td>
+      <button id=openbatch onclick="document.getElementById('batchpopup').classList.remove('hidden'); return false">BATCH</button>
     </td>
     <td>
       <form onsubmit="formsend(this); return false" name=loadright method=get>
@@ -195,6 +198,14 @@
     </td>
   </tr>
 </table>
+
+<div id=batchpopup class=hidden>
+<pre class=editable id=batchentry contenteditable=true></pre>
+<button class=batch id=resetbatch onclick=resetBatch()>Reset</button>
+<button class=batch id=closebatch onclick="document.getElementById('batchpopup').classList.add('hidden'); return false">Close</button>
+<button class=batch id=runbatch onclick=sendBatch()>Run Batch!</button>
+</div>
+
 <div id=shortcuthelp class=hidden>
 KEYBOARD SHORTCUTS
 

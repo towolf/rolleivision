@@ -115,8 +115,9 @@ input[type='range'] {
     -webkit-appearance: none;
     height: 36px;
     padding: 3px;
+    margin: 10px 0;
     -webkit-border-radius: 15px;
-    -webkit-box-shadow:inset 2px 2px 6px #dedede;
+    -webkit-box-shadow: inset 2px 2px 6px #dedede;
     border-radius: 3px;
     border: 1px solid #dedede;
     background-color: #f5f5f5;
@@ -161,28 +162,6 @@ input[type='number'] {
   -webkit-box-shadow:inset 2px 2px 6px #aaa;
   -webkit-border-radius: 6px;
 }
-.editable {
-  overflow: auto;
-  font-family: monospace;
-  font-size: 1.2em;
-  padding-left: 5px;
-  background: #f5f5f5;
-  border: 1px solid #fff;
-  color: #565656;
-  display: block;
-  -webkit-box-shadow:inset 2px 2px 6px #aaa;
-  -webkit-border-radius: 6px;
-}
-.editable strong {
-  color: white;
-  background: crimson;
-}
-.batch {
-  font-size: 1.3em;
-}
-.invalid {
-  background: #fbe3e4;
-}
 input[type='submit'] {
   display: inline;
   width: 40%;
@@ -191,13 +170,13 @@ input[type='submit'] {
 .green {
   background: green;
 }
-#shortcuthelp {
+#shortcuthelp, #batchpopup {
   font-size: 80%;
   padding: 12px;
   left: 50%;
   top: 50%;
-  margin: -350px 0 0 -150px;
-  width: 300px;
+  margin: -350px 0 0 -225px;
+  width: 400px;
   z-index: 1002;
   color: #FFF;
   position: fixed;
@@ -214,4 +193,47 @@ input[type='submit'] {
 .hidden {
   display: none;
   visibility: hidden;
+}
+.editable {
+  overflow: auto;
+  font-family: monospace;
+  text-align: left;
+  font-size: 1.5em;
+  padding: 15px;
+  margin: 5px;
+  background: rgba(50, 50, 50, 255);
+  color: white;
+  display: block;
+  height: 350px;
+  -webkit-box-shadow:inset 2px 2px 6px black;
+  -webkit-border-radius: 6px;
+}
+.editable strong {
+  color: white;
+  background: crimson;
+}
+.batch {
+  font-size: 1.3em;
+  font-weight: bold;
+  background: #090909;
+  border: 1px solid #333;
+  -webkit-box-shadow: 1px 1px 1px black;
+  color: white;
+  width: 31%;
+  display: inline;
+}
+.batch:hover {
+  background-color: crimson;
+  color: white;
+}
+.batch:disabled {
+  background-color: black;
+  color: #222;
+  border: none;
+}
+#openbatch {
+  height: 40px;
+}
+.invalid {
+  background: #2a0f19;
 }
