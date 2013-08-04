@@ -1,7 +1,7 @@
 <!doctype html>
 <title>RolleiVision MSC Remote</title>
 <meta charset=utf-8>
-<meta name=viewport content="width=device-width, user-scalable=no">
+<meta name=viewport content="width=device-width, initial-scale=0.7, user-scalable=0">
 <link href=/static/favicon.ico rel=icon type=image/x-icon>
 <link rel=stylesheet href=/static/style.css>
 
@@ -143,7 +143,7 @@
   </tr>
   <tr>
     <td>
-      <form onsubmit=formsend(this) action=rolleicom name=loadleft method=get>
+      <form onsubmit="formsend(this); return false" name=loadleft method=get>
         <input id=lleftinput type=number name=slide min=0 max=50>
         <input type=submit value=LOAD />
       </form>
@@ -151,7 +151,7 @@
     <td>
     </td>
     <td>
-      <form onsubmit=formsend(this) action=rolleicom name=loadright method=get>
+      <form onsubmit="formsend(this); return false" name=loadright method=get>
         <input id=lrightinput type=number name=slide min=0 max=50>
         <input type=submit value=LOAD />
       </form>

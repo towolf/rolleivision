@@ -30,6 +30,21 @@ class RolleiCom():
                            '\x7F': '8', '\x7B': '9', '\x77': 'A', '\x1F': 'b',
                            '\x4E': 'C', '\x3D': 'd', '\x4F': 'E', '\x47': 'F',
                            '\x67': 'P', '\x00': ' '}
+        self.BATCH = '''
+                     LOOP:
+                     LD1:255     # Full brightness
+                     LM:200      # Left lamp on
+                     ST          # Pause (wait for remote)
+                     LM:202      # Left lamp off
+                     LD1:030     # Brightness 50
+                     ST          # Pause
+                     LM:200      # Left lamp on
+                     SLEEP 5     # Wait 12 seconds
+                     LM:202      # Left lamp off
+                     ST          # Pause
+                     # GOTO LOOP   # Jump
+                     '''
+        self.DEFAULTBATCH = self.BATCH
 
     def getstatus(self, verbose=False):
         # the char sent for status report is SMALL SHARP S in DOS codepage
@@ -522,6 +537,14 @@ class RolleiCom():
         return (True, ''.join(reversed(digits)), '')
 
     # Batch command processing
+    def getbatch(self, default=False):
+        import textwrap
+        if not default:
+            batch = self.BATCH
+        else:
+            batch = self.DEFAULTBATCH
+        return (True, textwrap.dedent(batch), 'returned batch script')
+    # Batch command processing
     def runbatch(self, script):
         import time
         batch = [line.split('#')[0].strip() for line in script.splitlines()]
@@ -535,6 +558,7 @@ class RolleiCom():
                         yield '<strong>' + line + '</strong>'
             markup = '\n'.join(validate(batch, valid))
             return (False, markup, 'Batch contains errors')
+        self.BATCH = script
         for index, line in enumerate(batch):
             if not line or line.endswith(':'):
                 pass
@@ -548,7 +572,8 @@ class RolleiCom():
             else:
                 self.submit(line, wait=True)
             print "ran", index, line
-        return (True, index, 'ran {} lines'.format(index))
+        print self.BATCH
+        return (True, script, 'ran {} lines'.format(index))
 
     def _sigint_handler(self, signal, frame):
         print '\n\nYou pressed Ctrl+C!\n\n'
