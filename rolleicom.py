@@ -41,7 +41,6 @@ class RolleiCom():
                      LM:200     # Left lamp on
                      SLEEP 10.0 # Wait 10 seconds
                      LM:202     # Left lamp off
-                     ST         # <strong>Wait for GO on remote</strong>
                      # GOTO LOOP
                      '''
         self.DEFAULTBATCH = self.BATCH
