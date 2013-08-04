@@ -36,7 +36,7 @@ class RolleiCom():
                      LM:200     # Left lamp on
                      ST         # <strong>Wait for GO on remote</strong>
                      LM:202     # Left lamp off
-                     LD1:030    # Brightness 50
+                     LD1:030    # Brightness 30
                      ST         # <strong>Wait for GO on remote</strong>
                      LM:200     # Left lamp on
                      SLEEP 10.0 # Wait 10 seconds
