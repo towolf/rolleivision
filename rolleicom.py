@@ -32,17 +32,17 @@ class RolleiCom():
                            '\x67': 'P', '\x00': ' '}
         self.BATCH = '''
                      LOOP:
-                     LD1:255     # Full brightness
-                     LM:200      # Left lamp on
-                     ST          # Pause (wait for remote)
-                     LM:202      # Left lamp off
-                     LD1:030     # Brightness 50
-                     ST          # Pause
-                     LM:200      # Left lamp on
-                     SLEEP 5     # Wait 12 seconds
-                     LM:202      # Left lamp off
-                     ST          # Pause
-                     # GOTO LOOP   # Jump
+                     LD1:255    # Full brightness
+                     LM:200     # Left lamp on
+                     ST         # <strong>Wait for GO on remote</strong>
+                     LM:202     # Left lamp off
+                     LD1:030    # Brightness 50
+                     ST         # <strong>Wait for GO on remote</strong>
+                     LM:200     # Left lamp on
+                     SLEEP 10.0 # Wait 10 seconds
+                     LM:202     # Left lamp off
+                     ST         # <strong>Wait for GO on remote</strong>
+                     # GOTO LOOP
                      '''
         self.DEFAULTBATCH = self.BATCH
 
