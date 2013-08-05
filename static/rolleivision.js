@@ -26,15 +26,14 @@ function formsend(form) {
   var query = {};
   for (var n = 0; n < form.elements.length; n++) {
     var field = form.elements[n];
-    if (!field.hasAttribute("name")
-        || (/^(?:radio|checkbox)$/.test(field.type)
-            && !field.checked)) {
+    if (!field.hasAttribute('name') ||
+        (/^(?:radio|checkbox)$/.test(field.type) && !field.checked)) {
               continue;
             }
-    if (field.type === "number" && isNaN(parseFloat(field.value))) {
+    if (field.type === 'number' && isNaN(parseFloat(field.value))) {
       continue;
     }
-    query[escape(field.getAttribute("name"))] = escape(field.value);
+    query[escape(field.getAttribute('name'))] = escape(field.value);
   }
   if (Object.keys(query).length > 0) {
     query['action'] = form.name;
@@ -67,30 +66,33 @@ var toggleLamps = function(origin) {
   XHR.get('/rolleicom', {'action': 'querylamps'}, function(x, r) {
     var emitting = r.response[1];
     if (emitting) {
-      submit({'action': 'lampcontrol', 'wait': true}, origin)
+      submit({'action': 'lampcontrol', 'wait': true}, origin);
       origin.classList.remove('on');
     } else {
-      submit({'action': 'lampcontrol', 'left': 1, 'right': 1}, origin)
+      submit({'action': 'lampcontrol', 'left': 1, 'right': 1}, origin);
       origin.classList.add('on');
     }
   });
 };
 var setLeftBrightness = function(value) {
   submit({'action': 'brightnessleft', 'brightness': value}, this);
-  document.getElementById('bleftvalue').value = ('\xA0\xA0\xA0\xA0\xA0' + (value / 255 * 100).toFixed(1)).slice(-5);
+  document.getElementById('bleftvalue').value =
+    ('\xA0\xA0\xA0\xA0\xA0' + (value / 255 * 100).toFixed(1)).slice(-5);
 };
 
 var setRightBrightness = function(value) {
   submit({'action': 'brightnessright', 'brightness': value}, this);
-  document.getElementById('brightvalue').value = ('\xA0\xA0\xA0\xA0\xA0' + (value / 255 * 100).toFixed(1)).slice(-5);
+  document.getElementById('brightvalue').value =
+    ('\xA0\xA0\xA0\xA0\xA0' + (value / 255 * 100).toFixed(1)).slice(-5);
 };
 
 var setDissolveTime = function(value) {
   submit({'action': 'dissolvefor', 'duration': value}, this);
-  document.getElementById('dissolvevalue').value = ('\xA0\xA0\xA0' + (value / 10).toFixed(1)).slice(-5) + ' Sek.';
+  document.getElementById('dissolvevalue').value =
+    ('\xA0\xA0\xA0' + (value / 10).toFixed(1)).slice(-5) + ' Sek.';
 };
 
-function sendBatch() {
+var sendBatch = function() {
     var batchentry = document.getElementById('batchentry');
     var runbatch = document.getElementById('runbatch');
     var resetbatch = document.getElementById('resetbatch');
@@ -116,9 +118,9 @@ function sendBatch() {
             runbatch.disabled = false;
             resetbatch.disabled = false;
             closebatch.disabled = false;
-            (success) 
-                ? batchentry.classList.remove('invalid') 
-                : batchentry.classList.add('invalid');
+            (success) ?
+              batchentry.classList.remove('invalid') :
+              batchentry.classList.add('invalid');
         }
     };
 
@@ -157,37 +159,37 @@ Mousetrap.bind(['?'], function(e) {
 });
 
 Mousetrap.bind(['<'], function(e) {
-  submit({'action': 'next'}, document.getElementById('forward'))
+  submit({'action': 'next'}, document.getElementById('forward'));
   return false;
 });
 
 Mousetrap.bind(['<'], function(e) {
-  submit({'action': 'next'})
+  submit({'action': 'next'});
   return false;
 });
 
 Mousetrap.bind(['>'], function(e) {
-  submit({'action': 'previous'})
+  submit({'action': 'previous'});
   return false;
 });
 
 Mousetrap.bind(['e'], function(e) {
-  submit({'action': 'end'})
+  submit({'action': 'end'});
   return false;
 });
 
 Mousetrap.bind(['r'], function(e) {
-  submit({'action': 'reset'})
+  submit({'action': 'reset'});
   return false;
 });
 
 Mousetrap.bind(['p'], function(e) {
-  submit({'action': 'togglePC'}, document.getElementById('pcmode') )
+  submit({'action': 'togglePC'}, document.getElementById('pcmode'));
   return false;
 });
 
 Mousetrap.bind(['s'], function(e) {
-  submit({'action': 'togglestop'})
+  submit({'action': 'togglestop'});
   return false;
 });
 
@@ -197,66 +199,66 @@ Mousetrap.bind(['b'], function(e) {
 });
 
 Mousetrap.bind(['+'], function(e) {
-  submit({'action': 'focusin'})
+  submit({'action': 'focusin'});
   return false;
 });
 
 Mousetrap.bind(['-'], function(e) {
-  submit({'action': 'focusout'})
+  submit({'action': 'focusout'});
   return false;
 });
 
 Mousetrap.bind(['h'], function(e) {
   var element = document.getElementById('bleftinput');
-  element.stepDown(10)
-  var evt = document.createEvent("HTMLEvents");
-  evt.initEvent("change", false, true);
-  element.dispatchEvent(evt)
+  element.stepDown(10);
+  var evt = document.createEvent('HTMLEvents');
+  evt.initEvent('change', false, true);
+  element.dispatchEvent(evt);
   return false;
 });
 
 Mousetrap.bind(['j'], function(e) {
   var element = document.getElementById('bleftinput');
-  element.stepUp(10)
-  var evt = document.createEvent("HTMLEvents");
-  evt.initEvent("change", false, true);
-  element.dispatchEvent(evt)
+  element.stepUp(10);
+  var evt = document.createEvent('HTMLEvents');
+  evt.initEvent('change', false, true);
+  element.dispatchEvent(evt);
   return false;
 });
 
 Mousetrap.bind(['k'], function(e) {
   var element = document.getElementById('brightinput');
-  element.stepDown(10)
-  var evt = document.createEvent("HTMLEvents");
-  evt.initEvent("change", false, true);
-  element.dispatchEvent(evt)
+  element.stepDown(10);
+  var evt = document.createEvent('HTMLEvents');
+  evt.initEvent('change', false, true);
+  element.dispatchEvent(evt);
   return false;
 });
 
 Mousetrap.bind(['l'], function(e) {
   var element = document.getElementById('brightinput');
-  element.stepUp(10)
-  var evt = document.createEvent("HTMLEvents");
-  evt.initEvent("change", false, true);
-  element.dispatchEvent(evt)
+  element.stepUp(10);
+  var evt = document.createEvent('HTMLEvents');
+  evt.initEvent('change', false, true);
+  element.dispatchEvent(evt);
   return false;
 });
 
 Mousetrap.bind(['a'], function(e) {
   var element = document.getElementById('dissolveinput');
-  element.stepDown(5)
-  var evt = document.createEvent("HTMLEvents");
-  evt.initEvent("change", false, true);
-  element.dispatchEvent(evt)
+  element.stepDown(5);
+  var evt = document.createEvent('HTMLEvents');
+  evt.initEvent('change', false, true);
+  element.dispatchEvent(evt);
   return false;
 });
 
 Mousetrap.bind(['y'], function(e) {
   var element = document.getElementById('dissolveinput');
-  element.stepUp(5)
-  var evt = document.createEvent("HTMLEvents");
-  evt.initEvent("change", false, true);
-  element.dispatchEvent(evt)
+  element.stepUp(5);
+  var evt = document.createEvent('HTMLEvents');
+  evt.initEvent('change', false, true);
+  element.dispatchEvent(evt);
   return false;
 });
 
@@ -306,14 +308,14 @@ Mousetrap.bind(['8'], function(e) {
 
 // Suspend XHR requests when tab is not visible
 (function() {
-  var hidden = "hidden";
+  var hidden = 'hidden';
 
   if (hidden in document)
-    document.addEventListener("visibilitychange", onchange);
-  else if ((hidden = "mozHidden") in document)
-    document.addEventListener("mozvisibilitychange", onchange);
-  else if ((hidden = "webkitHidden") in document)
-    document.addEventListener("webkitvisibilitychange", onchange);
+    document.addEventListener('visibilitychange', onchange);
+  else if ((hidden = 'mozHidden') in document)
+    document.addEventListener('mozvisibilitychange', onchange);
+  else if ((hidden = 'webkitHidden') in document)
+    document.addEventListener('webkitvisibilitychange', onchange);
 
   function onchange(evt) {
     if (document[hidden]) {
@@ -396,17 +398,22 @@ window.onload = function() {
   };
   var initDissolve = function() {
     XHR.get('/rolleicom', {'action': 'querydissolve'}, function(x, r) {
-      var success = r.response[0], value = r.response[1], status = r.response[2];
+      var success = r.response[0],
+          value = r.response[1],
+          status = r.response[2];
       if (success) {
         dissolve.value = value;
-        document.getElementById('dissolvevalue').value = ('\xA0\xA0\xA0' + (value / 10).toFixed(1)).slice(-5) + ' Sek.';
+        document.getElementById('dissolvevalue').value =
+          ('\xA0\xA0\xA0' + (value / 10).toFixed(1)).slice(-5) + ' Sek.';
       }
       initLamps();
     });
   };
   var initLoaded = function() {
     XHR.get('/rolleicom', {'action': 'queryloaded'}, function(x, r) {
-      var success = r.response[0], value = r.response[1], status = r.response[2];
+      var success = r.response[0],
+          value = r.response[1],
+          status = r.response[2];
       if (success) {
         lleft.value = value[0];
         lright.value = value[1];
@@ -416,12 +423,16 @@ window.onload = function() {
   };
   var initBrightness = function() {
     XHR.get('/rolleicom', {'action': 'querybrightness'}, function(x, r) {
-      var success = r.response[0], value = r.response[1], status = r.response[2];
+      var success = r.response[0],
+          value = r.response[1],
+          status = r.response[2];
       if (success) {
         bright.value = value[1];
         bleft.value = value[0];
-        document.getElementById('brightvalue').value = ('\xA0\xA0\xA0\xA0\xA0' + (bright.value / 255 * 100).toFixed(1)).slice(-5);
-        document.getElementById('bleftvalue').value = ('\xA0\xA0\xA0\xA0\xA0' + (bleft.value / 255 * 100).toFixed(1)).slice(-5);
+        document.getElementById('brightvalue').value =
+          ('\xA0\xA0\xA0\xA0\xA0' + (bright.value / 255 * 100).toFixed(1)).slice(-5);
+        document.getElementById('bleftvalue').value =
+          ('\xA0\xA0\xA0\xA0\xA0' + (bleft.value / 255 * 100).toFixed(1)).slice(-5);
       }
       initLoaded();
     });
