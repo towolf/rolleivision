@@ -28,8 +28,8 @@ function formsend(form) {
     var field = form.elements[n];
     if (!field.hasAttribute('name') ||
         (/^(?:radio|checkbox)$/.test(field.type) && !field.checked)) {
-              continue;
-            }
+      continue;
+    }
     if (field.type === 'number' && isNaN(parseFloat(field.value))) {
       continue;
     }
@@ -59,7 +59,7 @@ var throttle = function(func, wait) {
 };
 
 function toggleDark() {
-    document.body.classList.toggle('dark');
+  document.body.classList.toggle('dark');
 }
 
 var toggleLamps = function(origin) {
@@ -77,61 +77,61 @@ var toggleLamps = function(origin) {
 var setLeftBrightness = function(value) {
   submit({'action': 'brightnessleft', 'brightness': value}, this);
   document.getElementById('bleftvalue').value =
-    ('\xA0\xA0\xA0\xA0\xA0' + (value / 255 * 100).toFixed(1)).slice(-5);
+      ('\xA0\xA0\xA0\xA0\xA0' + (value / 255 * 100).toFixed(1)).slice(-5);
 };
 
 var setRightBrightness = function(value) {
   submit({'action': 'brightnessright', 'brightness': value}, this);
   document.getElementById('brightvalue').value =
-    ('\xA0\xA0\xA0\xA0\xA0' + (value / 255 * 100).toFixed(1)).slice(-5);
+      ('\xA0\xA0\xA0\xA0\xA0' + (value / 255 * 100).toFixed(1)).slice(-5);
 };
 
 var setDissolveTime = function(value) {
   submit({'action': 'dissolvefor', 'duration': value}, this);
   document.getElementById('dissolvevalue').value =
-    ('\xA0\xA0\xA0' + (value / 10).toFixed(1)).slice(-5) + ' Sek.';
+      ('\xA0\xA0\xA0' + (value / 10).toFixed(1)).slice(-5) + ' Sek.';
 };
 
 var sendBatch = function() {
-    var batchentry = document.getElementById('batchentry');
-    var runbatch = document.getElementById('runbatch');
-    var resetbatch = document.getElementById('resetbatch');
-    var closebatch = document.getElementById('closebatch');
-    var script = batchentry.innerText;
-    batchentry.innerHTML = '<span style="color:crimson;font-weight:bold;">Batch in progress ...</span>';
-    batchentry.classList.add('invalid');
-    runbatch.disabled = true;
-    resetbatch.disabled = true;
-    closebatch.disabled = true;
+  var batchentry = document.getElementById('batchentry');
+  var runbatch = document.getElementById('runbatch');
+  var resetbatch = document.getElementById('resetbatch');
+  var closebatch = document.getElementById('closebatch');
+  var script = batchentry.innerText;
+  batchentry.innerHTML = '<span style="color:crimson;font-weight:bold;">Batch in progress ...</span>';
+  batchentry.classList.add('invalid');
+  runbatch.disabled = true;
+  resetbatch.disabled = true;
+  closebatch.disabled = true;
 
-    var xhr = new XMLHttpRequest();
-    xhr.open('POST', '/rolleicom', true);
-    xhr.setRequestHeader('Content-type', 'text/plain');
-    xhr.onload = function(e) {
-        if (this.status == 200) {
-            var json = eval('(' + this.responseText + ')');
-            var success = json.response[0],
-            value = json.response[1],
-            status = json.response[2];
-            console.log(status);
-            batchentry.innerHTML = value;
-            runbatch.disabled = false;
-            resetbatch.disabled = false;
-            closebatch.disabled = false;
-            (success) ?
-              batchentry.classList.remove('invalid') :
-              batchentry.classList.add('invalid');
-        }
-    };
+  var xhr = new XMLHttpRequest();
+  xhr.open('POST', '/rolleicom', true);
+  xhr.setRequestHeader('Content-type', 'text/plain');
+  xhr.onload = function(e) {
+    if (this.status == 200) {
+      var json = eval('(' + this.responseText + ')');
+      var success = json.response[0],
+          value = json.response[1],
+          status = json.response[2];
+      console.log(status);
+      batchentry.innerHTML = value;
+      runbatch.disabled = false;
+      resetbatch.disabled = false;
+      closebatch.disabled = false;
+      (success) ?
+          batchentry.classList.remove('invalid') :
+          batchentry.classList.add('invalid');
+    }
+  };
 
-    xhr.send(script);
-    return false;
+  xhr.send(script);
+  return false;
 };
 
 var resetBatch = function() {
-    XHR.get('/rolleicom', {'action': 'getbatch', 'default': 1}, function(x, r) {
-        document.getElementById('batchentry').innerHTML = r.response[1];
-    });
+  XHR.get('/rolleicom', {'action': 'getbatch', 'default': 1}, function(x, r) {
+    document.getElementById('batchentry').innerHTML = r.response[1];
+  });
 };
 
 var checkConnection = function() {
@@ -404,7 +404,7 @@ window.onload = function() {
       if (success) {
         dissolve.value = value;
         document.getElementById('dissolvevalue').value =
-          ('\xA0\xA0\xA0' + (value / 10).toFixed(1)).slice(-5) + ' Sek.';
+            ('\xA0\xA0\xA0' + (value / 10).toFixed(1)).slice(-5) + ' Sek.';
       }
       initLamps();
     });
@@ -430,9 +430,9 @@ window.onload = function() {
         bright.value = value[1];
         bleft.value = value[0];
         document.getElementById('brightvalue').value =
-          ('\xA0\xA0\xA0\xA0\xA0' + (bright.value / 255 * 100).toFixed(1)).slice(-5);
+            ('\xA0\xA0\xA0\xA0\xA0' + (bright.value / 255 * 100).toFixed(1)).slice(-5);
         document.getElementById('bleftvalue').value =
-          ('\xA0\xA0\xA0\xA0\xA0' + (bleft.value / 255 * 100).toFixed(1)).slice(-5);
+            ('\xA0\xA0\xA0\xA0\xA0' + (bleft.value / 255 * 100).toFixed(1)).slice(-5);
       }
       initLoaded();
     });
