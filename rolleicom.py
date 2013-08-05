@@ -32,6 +32,7 @@ class RolleiCom():
                            '\x67': 'P', '\x00': ' '}
         self.BATCH = '''
                      LOOP:
+                     SD:000     # No fades
                      LD1:255    # Full brightness
                      LM:200     # Left lamp on
                      ST         # <strong>Wait for GO on remote</strong>

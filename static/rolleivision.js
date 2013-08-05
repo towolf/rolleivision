@@ -132,10 +132,6 @@ var resetBatch = function() {
     });
 };
 
-var closeBatch = function() {
-  document.getElementById('batchpopup').classList.add('hidden');
-};
-
 var checkConnection = function() {
   XHR.poll(5, '/rolleicom', {'action': 'connected'}, function(x, r) {
     var response = r.response;
@@ -246,6 +242,23 @@ Mousetrap.bind(['l'], function(e) {
   return false;
 });
 
+Mousetrap.bind(['a'], function(e) {
+  var element = document.getElementById('dissolveinput');
+  element.stepDown(5)
+  var evt = document.createEvent("HTMLEvents");
+  evt.initEvent("change", false, true);
+  element.dispatchEvent(evt)
+  return false;
+});
+
+Mousetrap.bind(['y'], function(e) {
+  var element = document.getElementById('dissolveinput');
+  element.stepUp(5)
+  var evt = document.createEvent("HTMLEvents");
+  evt.initEvent("change", false, true);
+  element.dispatchEvent(evt)
+  return false;
+});
 
 Mousetrap.bind(['1'], function(e) {
   submit({'action': 'submit', 'cmd': 'LM:200'});

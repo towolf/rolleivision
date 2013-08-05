@@ -39,6 +39,10 @@ td {
   vertical-align: middle;
   padding: 0 10px 0 10px;
 }
+td.subtable {
+  vertical-align: top;
+  padding: 0;
+}
 output, label {
   vertical-align: middle;
   width: 25%;

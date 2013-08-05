@@ -203,12 +203,13 @@
 <pre class=editable id=batchentry contenteditable=true></pre>
 <button class=batch id=resetbatch onclick=resetBatch()>Reset</button>
 <button class=batch id=closebatch onclick="document.getElementById('batchpopup').classList.add('hidden'); return false">Close</button>
-<button class=batch id=runbatch onclick=sendBatch()>Run Batch!</button>
+<button class=batch id=runbatch onclick=sendBatch()><strong>Run Batch!</strong></button>
 </div>
 
 <div id=shortcuthelp class=hidden>
+<table>
+<td class=subtable>
 KEYBOARD SHORTCUTS
-
 <table>
 <tbody>
 <tr>
@@ -232,11 +233,11 @@ KEYBOARD SHORTCUTS
 </tr>
 <tr>
 <td class=right>5</td>
-<td class=left>Dissolve lamps left to right</td>
+<td class=left>Dissolve left to right</td>
 </tr>
 <tr>
 <td class=right>6</td>
-<td class=left>Dissolve lamps right to left</td>
+<td class=left>Dissolve right to left</td>
 </tr>
 <tr>
 <td class=right>7</td>
@@ -264,6 +265,17 @@ KEYBOARD SHORTCUTS
 <tr>
 <td class=right>l</td>
 <td class=left>Increase brightness right</td>
+</tr>
+<tr>
+<td colspan=2><hr></td>
+</tr>
+<tr>
+<td class=right>a</td>
+<td class=left>Fade 0.5s shorter</td>
+</tr>
+<tr>
+<td class=right>y</td>
+<td class=left>Fade 0.5s longer</td>
 </tr>
 <tr>
 <td colspan=2><hr></td>
@@ -304,5 +316,129 @@ KEYBOARD SHORTCUTS
 <td class=left>Reset projector</td>
 </tr>
 </tbody>
+</table>
+</td>
+<td class=subtable>
+  BATCH COMMANDS
+<table>
+<tbody>
+<tr>
+<td colspan=2><hr></td>
+</tr>
+<tr>
+<td class=right>BV</td>
+<td class=left>Next slide</td>
+</tr>
+<tr>
+<td class=right>BR</td>
+<td class=left>Previous slide</td>
+</tr>
+<tr>
+<td class=right>B1:XXX</td>
+<td class=left>Load left</td>
+</tr>
+<tr>
+<td class=right>B2:XXX</td>
+<td class=left>Load right</td>
+</tr>
+<tr>
+<td class=right>FV</td>
+<td class=left>Focus in</td>
+</tr>
+<tr>
+<td class=right>FR</td>
+<td class=left>Focus out</td>
+</tr>
+<tr>
+<td class=right>AE</td>
+<td class=left>Autofocus on</td>
+</tr>
+<tr>
+<td colspan=2><hr></td>
+</tr>
+<tr>
+<td class=right>ST / WE</td>
+<td class=left>Stop &amp; GO</td>
+</tr>
+<tr>
+<td class=right>EN</td>
+<td class=left>END</td>
+</tr>
+<tr>
+<td colspan=2><hr></td>
+</tr>
+<tr>
+<td class=right>SLEEP</td>
+<td class=left>Seconds to wait</td>
+</tr>
+<tr>
+<td class=right>GOTO</td>
+<td class=left>Jump to "DEST:"</td>
+</tr>
+<tr>
+<td colspan=2><hr></td>
+</tr>
+<tr>
+<td class=right>LD1:XXX</td>
+<td class=left>Brightness left</td>
+</tr>
+<tr>
+<td class=right>LD2:XXX</td>
+<td class=left>Brightness right</td>
+</tr>
+<tr>
+<td class=right>SD:XXX</td>
+<td class=left>Dissolve time</td>
+</tr>
+<tr>
+<td class=right>LM:XXX</td>
+<td class=left>200 Left on</td>
+</tr>
+<tr>
+<td class=right></td>
+<td class=left>201 Right on</td>
+</tr>
+<tr>
+<td class=right></td>
+<td class=left>202 Left off</td>
+</tr>
+<tr>
+<td class=right></td>
+<td class=left>203 Right off</td>
+</tr>
+<tr>
+<td class=right></td>
+<td class=left>204 Fade →</td>
+</tr>
+<tr>
+<td class=right></td>
+<td class=left>205 Fade ←</td>
+</tr>
+<tr>
+<td class=right></td>
+<td class=left>206 Both off</td>
+</tr>
+<tr>
+<td class=right></td>
+<td class=left>207 Both on</td>
+</tr>
+<tr>
+<td colspan=2><hr></td>
+</tr>
+<tr>
+<td class=right>PE</td>
+<td class=left>Enable PC-Mode</td>
+</tr>
+<tr>
+<td class=right>PA</td>
+<td class=left>Disable PC-Mode</td>
+</tr>
+<tr>
+<td class=right>RS</td>
+<td class=left>RESET</td>
+</tr>
+</tbody>
+</table>
+</td>
 </table>
 </div>
