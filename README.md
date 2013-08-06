@@ -7,5 +7,5 @@ As the controlling box the Raspberry Pi running an ad-hoc wireless network is th
 
 ![web.py web interface](http://i.imgur.com/JDqbJrP.png)
 
-![web.py web interface](http://i.imgur.com/d8bnnMd.png)
+![web.py web interface on Android](http://i.imgur.com/d8bnnMdl.png)
 
