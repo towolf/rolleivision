@@ -59,7 +59,8 @@ var throttle = function(func, wait) {
 };
 
 function toggleDark() {
-  document.body.classList.toggle('dark');
+  fullscreenelement.classList.toggle('dark');
+  enterFullscreen();
 }
 
 var toggleLamps = function(origin) {
@@ -153,6 +154,56 @@ var pollStatus = function() {
   });
 };
 
+// full screen code
+document.cancelFullScreen = document.webkitExitFullscreen || document.mozCancelFullScreen || document.exitFullscreen;
+
+function toggleFS(el) {
+  if (el.webkitEnterFullScreen) {
+    el.webkitEnterFullScreen();
+  } else {
+    if (el.mozRequestFullScreen) {
+      el.mozRequestFullScreen();
+    } else {
+      el.requestFullscreen();
+    }
+  }
+  el.ondblclick = exitFullscreen;
+}
+
+function onFullScreenEnter() {
+  console.log("Entered fullscreen!");
+  fullscreenelement.onwebkitfullscreenchange = onFullScreenExit;
+  fullscreenelement.onmozfullscreenchange = onFullScreenExit;
+};
+
+function onFullScreenExit() {
+  console.log("Exited fullscreen!");
+  fullscreenelement.classList.remove('dark');
+};
+
+function enterFullscreen() {
+  console.log("enterFullscreen()");
+  fullscreenelement.onwebkitfullscreenchange = onFullScreenEnter;
+  fullscreenelement.onmozfullscreenchange = onFullScreenEnter;
+  fullscreenelement.onfullscreenchange = onFullScreenEnter;
+  if (fullscreenelement.webkitRequestFullscreen) {
+    fullscreenelement.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
+  } else {
+    if (fullscreenelement.mozRequestFullScreen) {
+      fullscreenelement.mozRequestFullScreen();
+    } else {
+      fullscreenelement.requestFullscreen();
+    }
+  }
+}
+
+function exitFullscreen() {
+  console.log("exitFullscreen()");
+  document.cancelFullScreen();
+  document.getElementById('enter-exit-fs').onclick = enterFullscreen;
+}
+
+// keybindings
 Mousetrap.bind(['?'], function(e) {
   document.getElementById('shortcuthelp').classList.toggle('hidden');
   return false;
@@ -170,6 +221,11 @@ Mousetrap.bind(['<'], function(e) {
 
 Mousetrap.bind(['>'], function(e) {
   submit({'action': 'previous'});
+  return false;
+});
+
+Mousetrap.bind(['f'], function(e) {
+  enterFullscreen();
   return false;
 });
 
@@ -327,6 +383,7 @@ Mousetrap.bind(['8'], function(e) {
 })();
 
 window.onload = function() {
+
   var bleft = document.getElementById('bleftinput'),
   bright = document.getElementById('brightinput'),
   lleft = document.getElementById('lleftinput'),
@@ -335,7 +392,10 @@ window.onload = function() {
   pcmode = document.getElementById('pcmode'),
   stopgo = document.getElementById('stopgo'),
   autofocus = document.getElementById('autofocus');
-  lamps = document.getElementById('lamps');
+  lamps = document.getElementById('lamps'),
+  fullscreenelement = document.getElementById('fullscreen');
+
+  document.body.ondblclick = enterFullscreen;
 
   bleft.addEventListener('change', throttle(function() {
     setLeftBrightness(bleft.value)}, 50), false);

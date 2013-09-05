@@ -4,7 +4,7 @@ body {
   color: #565656;
 }
 .dark {
-  background: black;
+  -webkit-transform: translateZ(0);
   -webkit-filter: invert(1) hue-rotate(160deg) saturate(1.2) brightness(1.1);
 }
 #error, #res {
@@ -240,4 +240,12 @@ input[type='submit'] {
 }
 .invalid {
   background: #2a0f19;
+}
+#remote:-webkit-full-screen {
+  width: 100%;
+  height: 100%;
+}
+:-webkit-full-screen > #batchpopup {
+  -webkit-transform: translateZ(0);
+  -webkit-filter: invert(1) hue-rotate(180deg);
 }
