@@ -195,12 +195,13 @@ function enterFullscreen() {
       fullscreenelement.requestFullscreen();
     }
   }
+  document.getElementById('dark').onclick = exitFullscreen;
 }
 
 function exitFullscreen() {
   console.log("exitFullscreen()");
   document.cancelFullScreen();
-  document.getElementById('enter-exit-fs').onclick = enterFullscreen;
+  document.getElementById('dark').onclick = toggleDark;
 }
 
 // keybindings
