@@ -167,7 +167,6 @@ function toggleFS(el) {
       el.requestFullscreen();
     }
   }
-  el.ondblclick = exitFullscreen;
 }
 
 function onFullScreenEnter() {
@@ -396,14 +395,17 @@ window.onload = function() {
   lamps = document.getElementById('lamps'),
   fullscreenelement = document.getElementById('fullscreen');
 
-  document.body.ondblclick = enterFullscreen;
-
   bleft.addEventListener('change', throttle(function() {
     setLeftBrightness(bleft.value)}, 50), false);
   bright.addEventListener('change', throttle(function() {
     setRightBrightness(bright.value)}, 50), false);
   dissolve.addEventListener('change', throttle(function() {
     setDissolveTime(dissolve.value)}, 250), false);
+
+
+  if ('ontouchstart' in window) {
+    fullscreenelement.classList.add('dark');
+  };
 
   var initBatch = function() {
     XHR.get('/rolleicom', {'action': 'getbatch'}, function(x, r) {
